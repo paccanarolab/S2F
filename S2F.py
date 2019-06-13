@@ -94,7 +94,7 @@ if __name__ == '__main__':
     install.add_argument('--string-links',
                          help='manually provide the path to the STRING interactions database, it must be the full path '
                               'to either "protein.links.full.vX.x.txt.gz" or "protein.links.detailed.vX.x.txt.gz". If '
-                              'not provided, the installation script will attemt to download the full database using '
+                              'not provided, the installation script will attempt to download the full database using '
                               'the wget command.',
                          default='download')
     install.add_argument('--string-sequences',
@@ -104,7 +104,7 @@ if __name__ == '__main__':
                          default='download')
     install.add_argument('--string-species',
                          help='manually provide the path to the STRIN species list, it must be the full path to the '
-                              '"species.vX.x.txt" file. If not provided, the installation script will attemt to '
+                              '"species.vX.x.txt" file. If not provided, the installation script will attempt to '
                               'download it using the wget command.',
                          default='download')
     install.add_argument('--uniprot-swissprot',

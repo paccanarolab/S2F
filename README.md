@@ -2,7 +2,8 @@
 
 A protein function prediction tool that takes only the sequences as input
 
-[ToC]
+* [Installation](#installation)
+* [How to make a prediction](#how-to-make-a-prediction)
 
 ## Requirements
 
@@ -35,7 +36,7 @@ You may simply run:
 ```bash
 python S2F.py install
 ```
-You will be asked to confirm the configured options of the installation script. IF you're happy and reply with `y`, the installer will download and process the required databases. This, however, assumes that all requirements listed above are met. 
+You will be asked to confirm the configured options of the installation script. If you're happy and reply with `y`, the installer will download and process the required databases. This, however, assumes that all requirements listed above are met. 
 
 ### Configure the installation script
 
@@ -63,6 +64,8 @@ filtered_sprot = infer
 [options]
 evidence_codes = experimental
 ```
+
+A description of each option is provided in the following table:
 
 | Option | Description |
 | --- | --- |
@@ -102,30 +105,77 @@ The command line options for the installation are the following (but we highly r
 
 ### Using a configuration file
 
-Due to the number of parameters that can be set for S2F, it is often useful to
-create a configuration file, which should then be provided to the `predict` 
+Due to the number of parameters that can be set for S2F, the easiest way to running it is to create a configuration file, which should then be provided to the `predict` 
 command using the `--run-config` argument:
 
 ```bash
 ./S2F.sh predict --run-config my_organism.conf
 ```
 
-### Using a command-line
-
-```bash
-./S2F.sh predict --run-config my_organism.conf
-```
-
-
-## Configuration Files
-
-S2F has 2 configuration files to simplify the installation and prediction processes. The installation file 
-
-
-
-### Prediction
+An example configuration file is provided with the default values:
 
 ```ini
-[section]
-asd = asd
+[configuration]
+config_file = ~/.s2f.conf
+alias = test
+obo = ~/go.obo
+fasta = ~/test.fasta
+cpu = infer
+
+[graphs]
+combined_graph = compute
+graph_collection = compute
+homology_graph = compute
+
+[seeds]
+interpro_output = compute
+hmmer_output = compute
+
+[blacklists]
+hmmer_blacklist = compute
+transfer_blacklist = compute
+
+[functions]
+goa_clamp = compute
 ```
+
+A description of each option is provided in the following table:
+
+| Option | Description |
+| --- | --- |
+| `--run-config` | path to the run configuration file (**overrides all other arguments**)
+| `--config-file` | location of the installation configuration file that will be loaded. If not provided, the default configuration file will be loaded |
+| `--alias`| Name of the prediction run |
+| `--obo`| Path to the `go.obo` file to use'|
+| `--fasta`| Path to the protein sequence file'|
+| `--cpu`| Number of CPUs to use for parallelisable computations|
+| `--interpro-output`| manually provide InterPro output file and therefore avoid its computation |
+| `--hmmer-output`| manually provide HMMer output file and therefore avoid its computation |
+| `--transfer-blacklist`| a list of identifiers from which no transference will be done |
+| `--hmmer-blacklist` | a list of identifiers that will be ignored from the HMMer result list |
+| `--graph-collection` | provide a STRING graph collection manually to avoid building one |
+| `--combined-graph` | manually provide a combined graph to avoid its construction (overwrites `--graph-collection`) |
+| `--homology-graph` | manually provide a homology graph file, avoiding its computation |
+| `--goa-clamp` | provide a set of ground truth functional associations, these associations will be clamped (set to `1`) into the diffusion seed. The format of this file is: `PROTEIN_ID<tab>GO_ID` |
+
+
+### Predict command line options
+
+If preferred, the options listed above are also supported as command line arguments.
+
+| Option | Description | Default Value |
+| --- | --- | --- |
+| `--run-config` | path to the run configuration file (**overrides all other arguments**)
+| `--config-file` | location of the installation configuration file that will be loaded. If not provided, the default configuration file will be loaded | `s2f.conf` (found in the script's directory) |
+| `--alias`| Name of the prediction run ||
+| `--obo`| Path to the `go.obo` file to use'||
+| `--fasta`| Path to the protein sequence file'||
+| `--cpu`| Number of CPUs to use for parallelisable computations| `infer` |
+| `--interpro-output`| manually provide InterPro output file and therefore avoid its computation | `compute` |
+| `--hmmer-output`| manually provide HMMer output file and therefore avoid its computation | `compute` |
+| `--transfer-blacklist`| a list of identifiers from which no transference will be done | |
+| `--hmmer-blacklist` | a list of identifiers that will be ignored from the HMMer result list | `compute` |
+| `--graph-collection` | provide a STRING graph collection manually to avoid building one | `compute` |
+| `--combined-graph` | manually provide a combined graph to avoid its construction (overwrites `--graph-collection`) | `compute` |
+| `--homology-graph` | manually provide a homology graph file, avoiding its computation | `compute` |
+| `--goa-clamp` | provide a set of ground truth functional associations, these associations will be clamped (set to `1`) into the diffusion seed. The format of this file is: `PROTEIN_ID<tab>GO_ID` | `compute` |
