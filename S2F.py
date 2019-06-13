@@ -64,7 +64,7 @@ if __name__ == '__main__':
     # TODO: perhaps it is a good idea to add the BLAST executable as a parameter as well
     install = subparsers.add_parser(
         'install',
-        description='given a fasta file, predicts protein function using S2F',
+        description='Installs the necessary requirements',
         help='install S2F and generate a configuration file'
     )
     install.set_defaults(func=commands.install)

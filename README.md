@@ -2,6 +2,8 @@
 
 A protein function prediction tool that takes only the sequences as input
 
+[ToC]
+
 ## Requirements
 
 S2F relies on the following software:
@@ -18,8 +20,7 @@ running:
 ./install_requirements.sh
 ```
 
-If you prefer to setup a virtualenv to use S2F, first create the virtual env, and then run the script passing the path
-to the python interpreter within that virtualenv to the script:
+If you prefer to setup a `virtualenv` to use S2F, first create it, and then run the script passing the path to the python interpreter within that `virtualenv` to the script:
 
 ```bash
 ./install_requirements.sh ~/.virtualenvs/s2f/bin/python
@@ -29,13 +30,32 @@ this will also generate a script named `S2F.sh` and configure it accordingly
 
 ## Installation
 
-A one-command solution is available to setup the entire environment for S2F. 
+A one-command solution is available to setup the entire environment for S2F (this will download HUNDREDS of GB of datasets, please look below to [configure the installer](#configure-the-installation-script) according to your needs, or the [command line options](#installer-options)). 
 You may simply run:
 ```bash
-./S2F.sh install
+python S2F.py install
 ```
-and the installer will download and process the required databases. This, 
-however, assumes that all the requirements are met  
+You will be asked to confirm the configured options of the installation script. IF you're happy and reply with `y`, the installer will download and process the required databases. This, however, assumes that all requirements listed above are met. 
+
+### Installer options
+
+The command line options for the installation are the following:
+
+| Option | Description | Default Value |
+| --- | --- | --- |
+| `--installation-directory` | Path to the installation directory for S2F. | `~/.S2F` |
+| `--config-file` | location of the configuration file that will be created. If not provided, the default configuration file will be loaded. | `s2f.conf` (found in the script's directory) |
+| `--interpro` | manually provide the path to the `iprscan` executable to avoid passing this parameter to the other commands every time. | `iprscan` (assumes this is correctly configured in the `PATH` environment variable) |
+| `--hmmer` | manually provide the path to the `phmmer` executable to avoid passing this parameter to the other commands every time. | `phmmer` (assumes this is correctly configured in the `PATH` environment variable) |
+| `--blastp` | manually provide the path to the `blastp` command in the system. If not provided, S2F will assume that the executable is available system-wide. | `blastp` (assumes this is correctly configured in the `PATH` environment variable) |
+| `--makeblastdb` | manually provide the path to the `makeblastdb` command in the system. If not provided, S2F will assume that the executable is available system-wide. | `makeblastdb` (assumes this is correctly configured in the `PATH` environment variable) |
+| `--string-links` | 'manually provide the path to the STRING interactions database, it must be the full path to either `protein.links.full.vX.x.txt.gz` or `protein.links.detailed.vX.x.txt.gz`. If not provided, the installation script will attempt to download the full database using the `wget` command.' | `download` |
+| `--string-sequences` | manually provide the path to the STRING sequences database, it must be the full path to the `protein.sequences.vX.x.fa.gz` file. If not provided, the installation script will attempt to download it using the `wget` command.' | `download` |
+| `--string-species` | manually provide the path to the STRIN species list, it must be the full path to the `species.vX.x.txt` file. If not provided, the installation script will attempt to download it using the `wget` command. | `download` |
+| `--uniprot-swissprot` | manually provide the path to the UniProt SwissProt sequences, it must be the full path to the "goa_uniprot_all.gaf.gz" file. If not provided, the installation script will attempt to download it using the `wget` command. | `download` |
+| `--uniprot-goa` | manually provide the path to the UniProt GOA, it must be the full path to the "goa_uniprot_all.gaf.gz" file. If not provided, the installation script will attempt to download it using the `wget` command. | `download` |
+| `--evidence-codes` | manually provide a list of evidence codes that will be used to filter the UniProt GOA. If not provided, S2F will be installed using only experimental evidence codes. | `experimental` |
+
 
 ## How to make a prediction
 
@@ -58,9 +78,9 @@ command using the `--run-config` argument:
 
 ## Configuration Files
 
-Fully explained options are available in the sample files
+S2F has 2 configuration files to simplify the installation and prediction processes. The installation file 
 
-### Installation 
+### Configure the installation script
 
 ```ini
 [section]
