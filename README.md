@@ -143,20 +143,19 @@ A description of each option is provided in the following table:
 
 | Option | Description |
 | --- | --- |
-| `--run-config` | path to the run configuration file (**overrides all other arguments**)
-| `--config-file` | location of the installation configuration file that will be loaded. If not provided, the default configuration file will be loaded |
-| `--alias`| Name of the prediction run |
-| `--obo`| Path to the `go.obo` file to use'|
-| `--fasta`| Path to the protein sequence file'|
-| `--cpu`| Number of CPUs to use for parallelisable computations|
-| `--interpro-output`| manually provide InterPro output file and therefore avoid its computation |
-| `--hmmer-output`| manually provide HMMer output file and therefore avoid its computation |
-| `--transfer-blacklist`| a list of identifiers from which no transference will be done |
-| `--hmmer-blacklist` | a list of identifiers that will be ignored from the HMMer result list |
-| `--graph-collection` | provide a STRING graph collection manually to avoid building one |
-| `--combined-graph` | manually provide a combined graph to avoid its construction (overwrites `--graph-collection`) |
-| `--homology-graph` | manually provide a homology graph file, avoiding its computation |
-| `--goa-clamp` | provide a set of ground truth functional associations, these associations will be clamped (set to `1`) into the diffusion seed. The format of this file is: `PROTEIN_ID<tab>GO_ID` |
+| `config_file` | location of the installation configuration file that will be loaded. If not provided, the default configuration file will be loaded |
+| `alias`| Name of the prediction run |
+| `obo`| Path to the `go.obo` file to use |
+| `fasta`| Path to the protein sequence file |
+| `cpu`| Number of CPUs to use for parallelisable computations |
+| `transfer_blacklist`| a list of identifiers from which no transference will be done |
+| `hmmer_blacklist` | a list of identifiers that will be ignored from the HMMer result list |
+| `graph_collection` | provide a STRING graph collection manually to avoid building one |
+| `combined_graph` | manually provide a combined graph to avoid its construction (overwrites `graph_collection`) |
+| `homology_graph` | manually provide a homology graph file, avoiding its computation |
+| `interpro_output`| manually provide InterPro output file and therefore avoid its computation |
+| `hmmer_output`| manually provide HMMer output file and therefore avoid its computation |
+| `goa_clamp` | provide a set of ground truth functional associations, these associations will be clamped (set to `1`) into the diffusion seed. The format of this file is: `PROTEIN_ID<tab>GO_ID` |
 
 
 ### Predict command line options
@@ -168,9 +167,9 @@ If preferred, the options listed above are also supported as command line argume
 | `--run-config` | path to the run configuration file (**overrides all other arguments**)
 | `--config-file` | location of the installation configuration file that will be loaded. If not provided, the default configuration file will be loaded | `s2f.conf` (found in the script's directory) |
 | `--alias`| Name of the prediction run ||
-| `--obo`| Path to the `go.obo` file to use'||
-| `--fasta`| Path to the protein sequence file'||
-| `--cpu`| Number of CPUs to use for parallelisable computations| `infer` |
+| `--obo`| Path to the `go.obo` file to use ||
+| `--fasta`| Path to the protein sequence file ||
+| `--cpu`| Number of CPUs to use for parallelisable computations | `infer` |
 | `--interpro-output`| manually provide InterPro output file and therefore avoid its computation | `compute` |
 | `--hmmer-output`| manually provide HMMer output file and therefore avoid its computation | `compute` |
 | `--transfer-blacklist`| a list of identifiers from which no transference will be done | |
