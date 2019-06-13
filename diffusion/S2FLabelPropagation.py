@@ -45,17 +45,9 @@ class S2FLabelPropagation(Diffusion):
         filename : str
             Path to write the results
         """
-        data = {
-            'protein': self.latest_diffusion.row,
-            'goterm': self.latest_diffusion.col,
-            'score': self.latest_diffusion.data
-        }
-        labelling_df = pd.DataFrame(data)
-        labelling_df = labelling_df.merge(self.proteins.reset_index(), left_on='protein', right_on='protein idx')
-        labelling_df = labelling_df.merge(self.terms.reset_index(), left_on='goterm', right_on='term idx')
-        labelling_df[['protein id', 'term id', 'score']].to_csv(filename, sep='\t', index=False, header=None)
+        Diffusion._write_results(self.latest_diffusion, self.proteins, self.terms, filename)
 
-    def diffuse(self, initial_guess):
+    def diffuse(self, initial_guess, **kwargs):
         r"""
         Diffuses the initial labelling `initial_guess` into the built kernel, if the kernel hasn't been built, it will
         build it using `compute_kernel`

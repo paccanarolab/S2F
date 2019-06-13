@@ -31,7 +31,7 @@ if __name__ == '__main__':
                          default=os.path.join(os.path.dirname(os.path.abspath(__file__)), 's2f.conf'))
     predict.add_argument('--alias', help='Name of the prediction run')
     predict.add_argument('--obo', help='Path to the go.obo file to use')
-    predict.add_argument('--fasta', help='Path to the protein seuquence file')
+    predict.add_argument('--fasta', help='Path to the protein sequencefile')
     predict.add_argument('--cpu', help='Number of CPUs to use for parallelisable computations', default='infer')
     predict.add_argument('--interpro-output',
                          help='manually provide InterPro output file and therefore avoid its computation',

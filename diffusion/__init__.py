@@ -1,4 +1,5 @@
 from Utils import *
+import pandas as pd
 
 import abc
 
@@ -6,6 +7,18 @@ import abc
 class Diffusion(FancyApp.FancyApp):
 
     __metaclass__ = abc.ABCMeta
+
+    @staticmethod
+    def _write_results(diffusion_matrix, proteins, terms, filename):
+        data = {
+            'protein': diffusion_matrix.row,
+            'goterm': diffusion_matrix.col,
+            'score': diffusion_matrix.data
+        }
+        labelling_df = pd.DataFrame(data)
+        labelling_df = labelling_df.merge(proteins.reset_index(), left_on='protein', right_on='protein idx')
+        labelling_df = labelling_df.merge(terms.reset_index(), left_on='goterm', right_on='term idx')
+        labelling_df[['protein id', 'term id', 'score']].to_csv(filename, sep='\t', index=False, header=None)
 
     @abc.abstractmethod
     def write_results(self, filename):

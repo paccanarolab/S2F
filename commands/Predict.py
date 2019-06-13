@@ -6,6 +6,8 @@ from graphs import collection
 from graphs import homology
 from graphs import combination
 from GOTool import GeneOntology
+from diffusion import Diffusion
+from diffusion.S2FLabelPropagation import S2FLabelPropagation
 
 from scipy import sparse
 from scipy.sparse.linalg import lsqr
@@ -108,6 +110,7 @@ class Predict(FancyApp.FancyApp):
         self.go = GeneOntology.GeneOntology(self.obo, verbose=True)
         self.terms = None
         self.proteins = None
+        self.prediction = None
 
         if self.cpu == 'infer':
             self.cpu = len(os.sched_getaffinity(0))  # https://docs.python.org/3/library/os.html#os.cpu_count
@@ -132,10 +135,19 @@ class Predict(FancyApp.FancyApp):
         # 6. GOA clamp if provided
         # 7. graph combination
         combined_graph = self.combine_graphs(graph_collection, graph_homology, ip_seed)
-        # 8. diffuse interpro
-        # 9. diffuse hmmer
-        # 10. output combination
-        pass
+        # 8. prepare diffusion kernel
+        kernel_params = {'lambda': 0.1}
+        diff = S2FLabelPropagation(combined_graph, self.proteins, self.terms)
+        diff.compute_kernel(**kernel_params)
+        # 9. diffuse interpro
+        ip_diff = diff.diffuse(ip_seed)
+        # 10. diffuse hmmer
+        hmmer_diff = diff.diffuse(hmmer_seed)
+        # 11. output combination
+        self.prediction = 0.9 * ip_diff + 0.1 * hmmer_diff
+
+    def write_prediction(self, filename):
+        Diffusion._write_results(self.prediction, self.proteins, self.terms, filename)
 
     def create_output_directory(self):
         if not os.path.isdir(self.output_dir):
@@ -236,12 +248,6 @@ class Predict(FancyApp.FancyApp):
         comb = combination.Combination(self.proteins, graph_collection, graph_homology, ip_seed)
         comb.compute_graph()
         return comb.get_graph()
-
-    def diffuse(self):
-        pass
-
-    def combine_diffusion(self):
-        pass
 
     def summary_and_continue(self):
         summary = 'These are the loaded values \n'
