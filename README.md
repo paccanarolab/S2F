@@ -14,6 +14,8 @@ S2F relies on the following software:
 * HMMer (`phmmer`)
 * Python 3
 
+**Note for Windows and Mac users:** Although S2F is meant to be run on Linux because its dependencies are Linux only (In particular, [InterProScan](https://github.com/ebi-pf-team/interproscan/wiki/InstallationRequirements)), you can run most of the commands in non-Linux workstations. Especially if you would like to [use your own seed](https://github.com/paccanarolab/s2f/wiki/Using-your-own-seed).
+
 S2F relies on several Python 3 packages. A script is provided that will install all the requirements simply by
 running:
 
