@@ -1,8 +1,3 @@
-import argparse
-import commands
-import os
-import json
-
 """
 
 S2F - Main Script
@@ -11,6 +6,10 @@ This is the main entry point for S2F, all the commands can be run by running thi
 
 """
 
+import argparse
+import commands
+import os
+import json
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(

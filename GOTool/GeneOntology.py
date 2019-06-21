@@ -8,7 +8,7 @@ work.
 License
 =======
 
-Copyright (c) 2018 Mateo Torres <tamas@cs.rhul.ac.uk>
+Copyright (c) 2018 Mateo Torres <Mateo.Torres.2016@live.rhul.ac.uk>
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation
