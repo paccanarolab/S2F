@@ -89,7 +89,10 @@ def keep_entire_prot_id(fasta_line):
 
 
 def keep_uniprot_accession(fasta_line):
-    return fasta_line[1:].split()[0].split('|')[1]
+    try:
+        return fasta_line[1:].split()[0].split('|')[1]
+    except IndexError:
+        return keep_entire_prot_id(fasta_line)
 
 
 def extract_indices_from_fasta(fasta, processing_func=keep_entire_prot_id):
