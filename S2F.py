@@ -168,6 +168,21 @@ if __name__ == '__main__':
                                  default=1e-4, type=float)
     seed_from_hmmer.add_argument('--output', help='Path to desired output file', required=True)
 
+    combine_seeds = subparsers.add_parser(
+        'combine-seeds',
+        description='Aggregates seed files using a linear combination',
+        help='combine-seeds command'
+    )
+    combine_seeds.set_defaults(func=commands.combine_seeds)
+    combine_seeds.add_argument('--seed-files', help='seed files to combine',
+                               nargs='+', required=True)
+    combine_seeds.add_argument('--seed-separator', help='separators of the seed files', default='\t')
+    combine_seeds.add_argument('--coefficients',
+                               help='list of coefficients, provided in the same order as the seed files, by defaults it'
+                                    'assigns the same value to each seed',
+                               nargs='+', default='infer')
+    seed_from_hmmer.add_argument('--output', help='Path to desired output file', required=True)
+
     args = parser.parse_args()
     if args.subcommand == 'predict':
         if args.run_config is None and (args.alias is None or args.obo is None or args.fasta is None):
