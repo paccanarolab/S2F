@@ -27,6 +27,7 @@ class CombineSeeds(FancyApp.FancyApp):
             self.coefficients = [1/n] * n
         elif len(self.coefficients) != len(self.seed_files):
             raise ValueError("The number of coefficients is different than the number of seeds")
+        self.coefficients = [float(c) for c in self.coefficients]
 
     def run(self):
         seeds = []
