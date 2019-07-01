@@ -152,7 +152,7 @@ if __name__ == '__main__':
     diffuse.add_argument('--labelling-sep', help='separator of the seed file', default='\t')
     diffuse.add_argument('--diffusion-method',
                          help='choose a diffusion method',
-                         default='s2f', choices=['s2f', 'label-weighted'])
+                         default='s2f', choices=['s2f', 'consistency-method', 'label-weighted'])
     diffuse.add_argument('--kernel-parameters', help='kernel parameters', default={'lambda': 0.1}, type=json.loads)
     diffuse.add_argument('--output', help='Path to desired output file', required=True)
 

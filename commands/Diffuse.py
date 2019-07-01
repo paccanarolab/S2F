@@ -1,5 +1,6 @@
 from Utils import *
 from diffusion.S2FLabelPropagation import S2FLabelPropagation
+from diffusion.ConsistencyMethod import ConsistencyMethod
 from diffusion.LabelWeightedPropagation import LabelWeightedPropagation
 from scipy import sparse
 from scipy.sparse.linalg import lsqr
@@ -45,6 +46,8 @@ class Diffuse(FancyApp.FancyApp):
     def select_diffusion_method(self):
         if self.diffusion_method == 's2f':
             return S2FLabelPropagation
+        elif self.diffusion_method == 'consistency-method':
+            return ConsistencyMethod
         elif self.diffusion_method == 'label-weighted':
             return LabelWeightedPropagation
         raise ModuleNotFoundError('could not find selected propagation method ' + self.diffusion_method)
