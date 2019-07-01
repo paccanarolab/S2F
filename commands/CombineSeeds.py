@@ -43,6 +43,6 @@ class CombineSeeds(FancyApp.FancyApp):
                                                     how='outer',
                                                     suffixes=['_1', '_2']).fillna(0)
             aggregated_seed['score'] = aggregated_seed['score_1'] + self.coefficients[i+1] * aggregated_seed['score_2']
-            aggregated_seed.drop(columns=['score_1', 'score_2'])
+            aggregated_seed.drop(columns=['score_1', 'score_2'], inplace=True)
         self.tell('writing aggregated seed')
-        aggregated_seed.to_csv(self.output, sep=self.seed_separator, header=False)
+        aggregated_seed.to_csv(self.output, sep=self.seed_separator, header=False, index=False)
