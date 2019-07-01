@@ -32,3 +32,9 @@ def seed_from_hmmer(args):
     from commands.SeedFromHMMER import SeedFromHMMER
     s = SeedFromHMMER(args)
     s.run()
+
+
+def combine_seeds(args):
+    from commands.CombineSeeds import CombineSeeds
+    c = CombineSeeds(args)
+    c.run()
