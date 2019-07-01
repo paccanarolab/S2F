@@ -106,7 +106,7 @@ class ConsistencyMethod(Diffusion):
             # build S
             S = D * self.graph * D
 
-            IalphaS = np.eye(S.shape[0]) - self.kernel_params['alpha'] * S
+            IalphaS = sparse.eye(S.shape[0]) - self.kernel_params['alpha'] * S
 
             self.tell(r'Inverting (I - \alpha S)...')
             self.kernel = linalg.inv(IalphaS.tocsc())
