@@ -181,7 +181,7 @@ if __name__ == '__main__':
                                help='list of coefficients, provided in the same order as the seed files, by defaults it'
                                     'assigns the same value to each seed',
                                nargs='+', default='infer')
-    seed_from_hmmer.add_argument('--output', help='Path to desired output file', required=True)
+    combine_seeds.add_argument('--output', help='Path to desired output file', required=True)
 
     args = parser.parse_args()
     if args.subcommand == 'predict':
