@@ -69,7 +69,7 @@ class ConsistencyMethod(Diffusion):
         """
         self.tell('Starting diffusion...')
         self.latest_diffusion = self.beta * self.kernel * initial_guess.todense()
-        self.latest_diffusion = self.latest_diffusion.tocoo()
+        self.latest_diffusion = sparse.coo_matrix(self.latest_diffusion)
         self.tell('done')
         return self.latest_diffusion
 
