@@ -4,6 +4,8 @@ from diffusion import Diffusion
 from scipy import sparse
 from scipy.sparse import linalg
 
+import numpy as np
+
 class ConsistencyMethod(Diffusion):
 
     def __init__(self, graph, proteins, terms):
@@ -99,7 +101,7 @@ class ConsistencyMethod(Diffusion):
             #indNonZeros = np.where(sums != 0)
             #diagonalValues = np.zeros(sums.shape)
 
-            degree = self.graph.sum(axis=1)
+            degree = 1/np.sqrt(self.graph.sum(axis=1))
             D = sparse.spdiags(degree.T, 0, n, n)
 
             #diagonalValues[indNonZeros] = 1.0 / np.sqrt(sums[indNonZeros])
@@ -112,11 +114,10 @@ class ConsistencyMethod(Diffusion):
             alpha = 1 / (1 + mu)
             self.beta = mu / (1 + mu)
 
-            self.kernel = sparse.eye(S.shape[0]) - alpha * S
-            #IalphaS = sparse.eye(S.shape[0]) - self.kernel_params['alpha'] * S
+            IalphaS = sparse.eye(S.shape[0]) - alpha * S
 
-            #self.tell(r'Inverting (I - \alpha S)...')
-            #self.kernel = linalg.inv(IalphaS.tocsc())
+            self.tell(r'Inverting (I - \alpha S)...')
+            self.kernel = np.linalg.inv(IalphaS.todense())
             self.tell('Kernel built')
         else:
             self.warning('Wrong parameters in Compute Kernel')

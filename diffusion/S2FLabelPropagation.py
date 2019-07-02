@@ -4,8 +4,7 @@ from diffusion import Diffusion
 from scipy import sparse
 from scipy.sparse import linalg
 
-import pandas as pd
-
+import numpy as np
 
 class S2FLabelPropagation(Diffusion):
 
@@ -117,7 +116,7 @@ class S2FLabelPropagation(Diffusion):
             IlambdaL = sparse.identity(n) + L_S2F.multiply(self.kernel_params['lambda'])
 
             self.tell(r'Inverting (I + \lambda W_S2F)...')
-            self.kernel = linalg.inv(IlambdaL.tocsc())
+            self.kernel = np.linalg.inv(IlambdaL.todense())
             self.tell('Kernel built')
         else:
             self.warning('Wrong parameters in Compute Kernel')
