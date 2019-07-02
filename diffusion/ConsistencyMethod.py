@@ -4,9 +4,6 @@ from diffusion import Diffusion
 from scipy import sparse
 from scipy.sparse import linalg
 
-import numpy as np
-import pandas as pd
-
 class ConsistencyMethod(Diffusion):
 
     def __init__(self, graph, proteins, terms):
@@ -31,6 +28,7 @@ class ConsistencyMethod(Diffusion):
         self.kernel_params = {}
         self.latest_diffusion = None
         self.kernel = None
+        self.beta = None
 
     def write_results(self, filename):
         r"""
@@ -68,7 +66,7 @@ class ConsistencyMethod(Diffusion):
         call to `write_results` that does not require a re-calculation of the final labelling.
         """
         self.tell('Starting diffusion...')
-        self.latest_diffusion = self.kernel * initial_guess
+        self.latest_diffusion = linalg.spsolve(self.kernel, initial_guess)
         self.latest_diffusion = self.latest_diffusion.tocoo()
         self.tell('done')
         return self.latest_diffusion
@@ -94,22 +92,31 @@ class ConsistencyMethod(Diffusion):
 
             self.tell('Diffusion Kernel computation started...')
             # build D
-            sums = self.graph.sum(1)  # sum every column per row
+            n = self.graph.shape[0]
+            #sums = self.graph.sum(1)  # sum every column per row
 
             # in case there are unconnected parts in the matrix
-            indNonZeros = np.where(sums != 0)
-            diagonalValues = np.zeros(sums.shape)
+            #indNonZeros = np.where(sums != 0)
+            #diagonalValues = np.zeros(sums.shape)
 
-            diagonalValues[indNonZeros] = 1.0 / np.sqrt(sums[indNonZeros])
-            D = sparse.spdiags(diagonalValues.T, 0, diagonalValues.shape[0], diagonalValues.shape[0])
+            degree = self.graph.sum(axis=1)
+            D = sparse.spdiags(degree.T, 0, n, n)
+
+            #diagonalValues[indNonZeros] = 1.0 / np.sqrt(sums[indNonZeros])
+            #D = sparse.spdiags(diagonalValues.T, 0, diagonalValues.shape[0], diagonalValues.shape[0])
 
             # build S
             S = D * self.graph * D
 
-            IalphaS = sparse.eye(S.shape[0]) - self.kernel_params['alpha'] * S
+            mu = self.kernel_params['mu']
+            alpha = 1 / (1 + mu)
+            self.beta = mu / (1 + mu)
 
-            self.tell(r'Inverting (I - \alpha S)...')
-            self.kernel = linalg.inv(IalphaS.tocsc())
+            self.kernel = sparse.eye(S.shape[0]) - alpha * S
+            #IalphaS = sparse.eye(S.shape[0]) - self.kernel_params['alpha'] * S
+
+            #self.tell(r'Inverting (I - \alpha S)...')
+            #self.kernel = linalg.inv(IalphaS.tocsc())
             self.tell('Kernel built')
         else:
             self.warning('Wrong parameters in Compute Kernel')
@@ -117,6 +124,6 @@ class ConsistencyMethod(Diffusion):
 
     def set_kernel_params(self, **kwargs):
         self.tell('reading kernel parameters...')
-        self.kernel_params['alpha'] = kwargs.get('alpha', 1.0)
+        self.kernel_params['mu'] = kwargs.get('mu', 1.0)
         self.tell(self.kernel_params)
         return True
