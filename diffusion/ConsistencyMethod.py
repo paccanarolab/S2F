@@ -66,7 +66,7 @@ class ConsistencyMethod(Diffusion):
         call to `write_results` that does not require a re-calculation of the final labelling.
         """
         self.tell('Starting diffusion...')
-        self.latest_diffusion = linalg.spsolve(self.kernel, initial_guess)
+        self.latest_diffusion = self.beta * linalg.spsolve(self.kernel.tocsc(), initial_guess.tocsc())
         self.latest_diffusion = self.latest_diffusion.tocoo()
         self.tell('done')
         return self.latest_diffusion
