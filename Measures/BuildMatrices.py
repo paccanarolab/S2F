@@ -8,9 +8,11 @@ class BuildMatrices(FancyApp.FancyApp):
     def __init__(
             self, 
             interpro,
-            interpro_diff, 
+            interpro_diff,
+            interpro_cm,
             hmmer, 
             hmmer_diff,
+            hmmer_cm,
             s2f,
             goa, 
             fasta, 
@@ -26,12 +28,18 @@ class BuildMatrices(FancyApp.FancyApp):
         
         self.interpro_diff = open(interpro_diff, 'r')
         self.interpro_diff_values = None
-        
+
+        self.interpro_cm = open(interpro_cm, 'r')
+        self.interpro_cm_values = None
+
         self.hmmer = open(hmmer, 'r')
         self.hmmer_values = None
         
         self.hmmer_diff = open(hmmer_diff, 'r')
         self.hmmer_diff_values = None
+
+        self.hmmer_cm = open(hmmer_cm, 'r')
+        self.hmmer_cm_values = None
 
         self.s2f = open(s2f, 'r')
         self.s2f_values = None
@@ -81,8 +89,14 @@ class BuildMatrices(FancyApp.FancyApp):
         self.tell('Inferring genes and terms from InterPro + Diffusion')
         self.inner_infer_headers(self.interpro_diff)
 
+        self.tell('Inferring genes and terms from InterPro + CM Diffusion')
+        self.inner_infer_headers(self.interpro_cm)
+
         self.tell('Inferring genes and terms from HMMer + Diffusion')
         self.inner_infer_headers(self.hmmer_diff)
+
+        self.tell('Inferring genes and terms from HMMer + CM Diffusion')
+        self.inner_infer_headers(self.hmmer_cm)
 
         self.tell('Inferring genes and terms from S2F')
         self.inner_infer_headers(self.s2f)
@@ -117,6 +131,8 @@ class BuildMatrices(FancyApp.FancyApp):
         self.hmmer_values = np.zeros((len(self.genes), len(self.go_terms)))
         self.interpro_diff_values = np.zeros((len(self.genes), len(self.go_terms)))
         self.hmmer_diff_values = np.zeros((len(self.genes), len(self.go_terms)))
+        self.interpro_cm_values = np.zeros((len(self.genes), len(self.go_terms)))
+        self.hmmer_cm_values = np.zeros((len(self.genes), len(self.go_terms)))
         self.s2f_values = np.zeros((len(self.genes), len(self.go_terms)))
         self.goa_values = np.zeros((len(self.genes), len(self.go_terms)))
         self.information_content = np.zeros(len(self.go_terms))
@@ -143,8 +159,14 @@ class BuildMatrices(FancyApp.FancyApp):
         self.tell('Inferring values from InterPro + Diffusion')
         self.inner_infer_values(self.interpro_diff, self.interpro_diff_values)
 
+        self.tell('Inferring values from InterPro + CM Diffusion')
+        self.inner_infer_values(self.interpro_cm, self.interpro_cm_values)
+
         self.tell('Inferring values from HMMer + Diffusion')
         self.inner_infer_values(self.hmmer_diff, self.hmmer_diff_values)
+
+        self.tell('Inferring values from HMMer + CM Diffusion')
+        self.inner_infer_values(self.hmmer_cm, self.hmmer_cm_values)
 
         self.tell('Inferring values from S2F')
         self.inner_infer_values(self.s2f, self.s2f_values)

@@ -25,8 +25,12 @@ required_arguments = aparser.add_argument_group('required arguments')
 required_arguments.add_argument('--outputs-dir', '--od',
                                 help='tsv that links tax ids to output folders, not the full path'
                                      'but only the name of the containig directory to avoid confussion', required=True)
+required_arguments.add_argument('--cm-diffusion-dir', '--cm',
+                                help='directory containing the results computed by the '
+                                     'consistency method diffusion', required=True)
 required_arguments.add_argument('--plot-individual', action='store_true')
 required_arguments.add_argument('--compute-metrics', action='store_true')
+
 
 args = aparser.parse_args()
 
@@ -34,17 +38,18 @@ output_dirs = pd.read_csv(args.outputs_dir, sep='\t',
                           names=['Tax ID', 'output'],
                           dtype={'Tax ID': 'str', 'output': 'str'})
 
+# This is a hack, and should really be an argument. This is a plot generation script though, so no much thought into it.
 if os.name == 'nt':
-    dataroot = r'A:\COMMON\PROJECTS\S2F\data\S2F-2018'
+    dataroot = r'A:\COMMON\PROJECTS\S2F\data'
 else:
     dataroot = '/home/paccanaro/COMMON/PROJECTS/S2F/data/S2F-2018/'
-obo = os.path.join(dataroot, 'INPUT/go.obo')
 
 if os.name == 'nt':
     DATA_DIRECTORY = r'G:\PaccanaroLab\s2f\data\bacteria_selection/'
 else:
     DATA_DIRECTORY = '../../../data/bacteria_selection/'
 
+obo = os.path.join(dataroot, 'INPUT/go.obo')
 OUTPUT_BASE = os.path.join(dataroot, 'output/')
 GOA_DIRECTORY = os.path.join(DATA_DIRECTORY, 'selected_goa/')
 FASTA_DIRECTORY = os.path.join(DATA_DIRECTORY, 'selected_fasta/')
@@ -63,11 +68,14 @@ flatui3 = ["#e5aa34", "#e534bb", "#31d6b5", ]
 # for nice labelling
 labels = [
     ('I+H+D', 'S2F'),
+    ('I+H+CM', 'InterPro & HMMER + CM'),
     ('I+H', 'InterPro + HMMER'),
     ('I', 'InterPro'),
     ('I+D', 'InterPro w/ diffusion'),
+    ('I+CM', 'InterPro + CM'),
     ('H', 'HMMER'),
     ('H+D', 'HMMER w/ diffusion'),
+    ('H+CM', 'InterPro + CM'),
 ]
 
 # we have these values per threshold, so they are unsafe for plotting
@@ -88,6 +96,8 @@ for i, organism in final_selection[condition].sort_values(by='Tax ID').iterrows(
     tell('loading output_files from', output_dir)
     interpro_diff_file = os.path.join(output_dir, 'interpro.diffusion')
     hmmer_diff_file = os.path.join(output_dir, 'hmmer.diffusion')
+    hmmer_cm_file = os.path.join(args.cm_diffusion_dir, 'diffusion-CM-hmmer-' + str(organism['Tax ID']))
+    interpro_cm_file = os.path.join(args.cm_diffusion_dir, 'diffusion-CM-' + str(organism['Tax ID']))
     s2f_file = os.path.join(output_dir, 'final.diffusion')
     goa = os.path.join(GOA_DIRECTORY, organism['File'])
     fasta = os.path.join(FASTA_DIRECTORY, organism['Tax ID'] + '.fasta')
@@ -103,26 +113,33 @@ for i, organism in final_selection[condition].sort_values(by='Tax ID').iterrows(
             tell('Found precomputed matrices, loading...')
             goa_values = np.load(org_dir + 'goa_values.npy')
             hmmer_diff_values = np.load(org_dir + 'hmmer_diff_values.npy')
+            hmmer_cm_values = np.load(org_dir + 'hmmer_cm_values.npy')
             hmmer_values = np.load(org_dir + 'hmmer_values.npy')
             interpro_diff_values = np.load(org_dir + 'interpro_diff_values.npy')
+            interpro_cm_values = np.load(org_dir + 'interpro_cm_values.npy')
             interpro_values = np.load(org_dir + 'interpro_values.npy')
             s2f_values = np.load(org_dir + 's2f_values.npy')
             information_content = np.load(org_dir + 'information_content.npy')
         else:
             os.makedirs(org_dir)
             matrix_builder = BuildMatrices.BuildMatrices(
-                interpro_file, interpro_diff_file, hmmer_file, hmmer_diff_file, s2f_file, goa, fasta, obo)
+                interpro_file, interpro_diff_file, interpro_cm_file,
+                hmmer_file, hmmer_diff_file, hmmer_cm_file, s2f_file, goa, fasta, obo)
             np.save(org_dir + 'goa_values.npy', matrix_builder.goa_values)
             np.save(org_dir + 'hmmer_diff_values.npy', matrix_builder.hmmer_diff_values)
+            np.save(org_dir + 'hmmer_cm_values.npy', matrix_builder.hmmer_cm_values)
             np.save(org_dir + 'hmmer_values.npy', matrix_builder.hmmer_values)
             np.save(org_dir + 'interpro_diff_values.npy', matrix_builder.interpro_diff_values)
+            np.save(org_dir + 'interpro_cm_values.npy', matrix_builder.interpro_cm_values)
             np.save(org_dir + 'interpro_values.npy', matrix_builder.interpro_values)
             np.save(org_dir + 's2f_values.npy', matrix_builder.s2f_values)
             np.save(org_dir + 'information_content.npy', matrix_builder.information_content)
             goa_values = matrix_builder.goa_values
             hmmer_diff_values = matrix_builder.hmmer_diff_values
+            hmmer_cm_values = matrix_builder.hmmer_cm_values
             hmmer_values = matrix_builder.hmmer_values
             interpro_diff_values = matrix_builder.interpro_diff_values
+            interpro_cm_values = matrix_builder.interpro_cm_values
             interpro_values = matrix_builder.interpro_values
             s2f_values = matrix_builder.s2f_values
             information_content = matrix_builder.information_content
@@ -132,6 +149,7 @@ for i, organism in final_selection[condition].sort_values(by='Tax ID').iterrows(
             group_name = ['3-10', '11-30', '31-100', '101-300', '1-300', 'all']
 
             s2f_nodiff = 0.9 * interpro_values + 0.1 * hmmer_values
+            i_h_cm_nodiff = 0.9 * interpro_cm_values + 0.1 * hmmer_cm_values
             sumcol = np.sum(goa_values, axis=0)
             sumrow = np.sum(goa_values, axis=1)
 
@@ -142,9 +160,12 @@ for i, organism in final_selection[condition].sort_values(by='Tax ID').iterrows(
             for low, high in ranges:
                 pred = {'I': interpro_values[sumrow > 3, :][:, (sumcol >= low) & (sumcol <= high)],
                         'I+D': interpro_diff_values[sumrow > 3, :][:, (sumcol >= low) & (sumcol <= high)],
+                        'I+CM': interpro_cm_values[sumrow > 3, :][:, (sumcol >= low) & (sumcol <= high)],
                         'H': hmmer_values[sumrow > 3, :][:, (sumcol >= low) & (sumcol <= high)],
                         'H+D': hmmer_diff_values[sumrow > 3, :][:, (sumcol >= low) & (sumcol <= high)],
+                        'H+CM': hmmer_cm_values[sumrow > 3, :][:, (sumcol >= low) & (sumcol <= high)],
                         'I+H': s2f_nodiff[sumrow > 3, :][:, (sumcol >= low) & (sumcol <= high)],
+                        'I+H+CM': i_h_cm_nodiff[sumrow > 3, :][:, (sumcol >= low) & (sumcol <= high)],
                         'I+H+D': s2f_values[sumrow > 3, :][:, (sumcol >= low) & (sumcol <= high)]}
                 predictions.append(pred)
                 gold_standards.append(goa_values[sumrow > 3, :][:, (sumcol >= low) & (sumcol <= high)])
