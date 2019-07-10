@@ -7,22 +7,21 @@ from scipy.sparse import linalg
 import numpy as np
 
 class ConsistencyMethod(Diffusion):
+    r"""
+    Consistency Method Label Propagation Algorithm
 
+    Parameters
+    ----------
+    graph : scipy.sparse
+        Graph in which the labels should be diffused (before the kernel is built)
+    proteins : pandas.DataFrame
+        Indices of the proteins that conform the graph. This DataFrame can be built using the
+        stand-alone 'utils' command
+    terms : pandas.DataFrame
+        Indices of the GO terms that will be mapped to the diffused seed. This DataFrame can be built using the
+        stand-alone 'utils' command
+    """
     def __init__(self, graph, proteins, terms):
-        r"""
-        Consistency Method Label Propagation Algorithm
-
-        Parameters
-        ----------
-        graph : scipy.sparse
-            Graph in which the labels should be diffused (before the kernel is built)
-        proteins : pandas.DataFrame
-            Indices of the proteins that conform the graph. This DataFrame can be built using the
-            stand-alone 'utils' command
-        terms : pandas.DataFrame
-            Indices of the GO terms that will be mapped to the diffused seed. This DataFrame can be built using the
-            stand-alone 'utils' command
-        """
         super(ConsistencyMethod, self).__init__()
         self.graph = graph
         self.proteins = proteins
