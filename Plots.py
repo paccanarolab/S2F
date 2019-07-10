@@ -42,7 +42,7 @@ output_dirs = pd.read_csv(args.outputs_dir, sep='\t',
 if os.name == 'nt':
     dataroot = r'A:\COMMON\PROJECTS\S2F\data'
 else:
-    dataroot = '/home/paccanaro/COMMON/PROJECTS/S2F/data/S2F-2018/'
+    dataroot = '/home/paccanaro/COMMON/PROJECTS/S2F/data/'
 
 if os.name == 'nt':
     DATA_DIRECTORY = r'G:\PaccanaroLab\s2f\data\bacteria_selection/'
