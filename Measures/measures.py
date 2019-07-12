@@ -80,6 +80,7 @@ class HX_py(S2FMeasure):
         valid_keys = [k for k in keys if k not in ['s', 'ru', 'mi', 'roc', 'pr']]
         for k in valid_keys:
             result[k+' per-gene'] = np.mean([g[k] for g in genewise])
+            result[k+' per-gene raw'] = np.array([g[k] for g in genewise])
         return result
 
     def compute_per_term(self, gold_standard):
@@ -106,6 +107,7 @@ class HX_py(S2FMeasure):
         valid_keys = [k for k in keys if k not in ['s', 'ru', 'mi', 'roc', 'pr']]
         for k in valid_keys:
             result[k + ' per-term'] = np.mean([g[k] for g in termwise])
+            result[k + ' per-term raw'] = np.array([g[k] for g in termwise])
         return result
 
     def compute_overall(self, gold_standard):
