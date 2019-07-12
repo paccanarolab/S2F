@@ -75,7 +75,7 @@ labels = [
     ('I+CM', 'InterPro + CM'),
     ('H', 'HMMER'),
     ('H+D', 'HMMER w/ diffusion'),
-    ('H+CM', 'InterPro + CM'),
+    ('H+CM', 'HMMER + CM'),
 ]
 
 # we have these values per threshold, so they are unsafe for plotting
