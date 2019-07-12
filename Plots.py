@@ -147,13 +147,15 @@ for i, organism in final_selection[condition].sort_values(by='Tax ID').iterrows(
         if args.compute_metrics:
             # ranges as HX's method
             group_name = ['3-10', '11-30', '31-100', '101-300', '1-300', 'all']
+            ranges = [(3, 10), (11, 30), (31, 100), (101, 300), (1, 300), (1, 1000000)]
+            group_name = ['all']
+            ranges = [(1, 1000000)]
 
             s2f_nodiff = 0.9 * interpro_values + 0.1 * hmmer_values
             i_h_cm_nodiff = 0.9 * interpro_cm_values + 0.1 * hmmer_cm_values
             sumcol = np.sum(goa_values, axis=0)
             sumrow = np.sum(goa_values, axis=1)
 
-            ranges = [(3, 10), (11, 30), (31, 100), (101, 300), (1, 300), (1, 1000000)]
             predictions = []
             gold_standards = []
             information_contents = []
