@@ -286,8 +286,12 @@ class Install(FancyApp.FancyApp):
         for line in open(self.uniprot_sprot.split('.gz')[0], 'r'):
             if line.startswith('>'):
                 ids.append(line.split('|')[1])
+        self.tell('Gathered', len(ids), 'SwissProt IDs')
 
         self.tell('Filtering UniProt GOA')
+        experimental_goa = self.uniprot_goa.split('.gz')[0] + '.exp'
+
+        num_lines = Utilities.wccount(experimental_goa)
 
         if self.evidence_codes == 'experimental':
             self.evidence_codes = GeneOntology.GeneOntology.EXPERIMENTAL_EVIDENCE_CODES
@@ -297,7 +301,11 @@ class Install(FancyApp.FancyApp):
 
         self.filtered_goa = os.path.join(self.installation_directory, 'data/UniprotKB/filtered_goa')
         fg = open(self.filtered_goa, 'w')
-        for line in open(self.uniprot_goa.split('.gz')[0], 'r'):
+        i = 0
+        for line in open(experimental_goa, 'r'):
+            i+=1
+            if i % 10000 == 0:
+                self.tell('Process:', i/num_lines*100.0,'%')
             if not line.startswith('!'):
                 fields = line.split('\t')
                 if fields[1] in ids and fields[6] in self.evidence_codes:
