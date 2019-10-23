@@ -1,7 +1,7 @@
 import sys
+
 import numpy as np
 import pandas as pd
-import scipy
 
 
 def all_indices(value, qlist):
@@ -17,7 +17,8 @@ def all_indices(value, qlist):
     return indices
 
 
-# taken from https://stackoverflow.com/questions/3041986/apt-command-line-interface-like-yes-no-input
+# taken from https://stackoverflow.com/questions/3041986/\
+    # apt-command-line-interface-like-yes-no-input
 def query_yes_no(question, default="yes"):
     """Ask a yes/no question via raw_input() and return their answer.
 
@@ -73,7 +74,8 @@ def jaccard(A):
 def dcg_at_k(r, k):
     r = np.asfarray(r)[:k]
     if r.size:
-        return np.sum(np.subtract(np.power(2, r), 1) / np.log2(np.arange(2, r.size + 2)))
+        return np.sum(np.subtract(np.power(2, r), 1) /
+                      np.log2(np.arange(2, r.size + 2)))
     return 0.
 
 
@@ -100,7 +102,8 @@ def extract_indices_from_fasta(fasta, processing_func=keep_entire_prot_id):
     given a fasta file, it will build a dataframe with
     the proteins as index, very useful for indexing graphs
     :param fasta: fasta file
-    :param processing_func: the function to process the line in case the entire ID is not required
+    :param processing_func: the function to process the line in case
+            the entire ID is not required
     :return: pandas.DataFrame
     """
     proteins = []

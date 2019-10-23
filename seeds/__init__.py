@@ -1,5 +1,6 @@
-from Utils import *
 import abc
+
+from Utils import FancyApp
 
 
 class Seed(FancyApp.FancyApp):
@@ -13,7 +14,8 @@ class Seed(FancyApp.FancyApp):
         Returns
         -------
         scipy.sparse matrix
-            a matrix with shape `(n, m)` where `n` is the number of proteins and `m` the number of terms
+            a matrix with shape `(n, m)` where `n` is the number of
+            proteins and `m` the number of terms
         """
 
     @classmethod

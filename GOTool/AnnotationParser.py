@@ -1,5 +1,4 @@
 
-#!/usr/bin/env python
 """
 A higher level Gene Ontology representation in Python
 
@@ -31,23 +30,22 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 """
 
-__author__  = "Tamas Nepusz"
-__email__   = "tamas@cs.rhul.ac.uk"
+__author__ = "Tamas Nepusz"
+__email__ = "tamas@cs.rhul.ac.uk"
 __copyright__ = "Copyright (c) 2009, Tamas Nepusz"
 __license__ = "MIT"
 __version__ = "0.1"
 
 __all__ = ["Annotation", "AnnotationFile"]
 
-from collections import deque, namedtuple
 
 class Annotation(object):
     """Class representing a GO annotation (possibly parsed from an
     annotation file).
-    
+
     The class has the following attributes (corresponding to the
     columns of a GO annotation file):
-        
+
     - ``db``: refers to the database from which the identifier
       in the next column (``db_object_id``) is drawn
     - ``db_object_id``: a unique identifier in ``db`` for the
@@ -78,25 +76,28 @@ class Annotation(object):
       always a list
     - ``date``: date on which the annotation was made
     - ``assigned_by``: the database which made the annotation.
-    - ``organism'': The organism in question. This is a modification of the original
-    code, motivated by the need to annotate the same tree with a bunch of organisms
+    - ``organism'': The organism in question. This is a modification
+      of the original
+    code, motivated by the need to annotate the same tree with
+    a bunch of organisms
     """
 
-    __slots__ = ["db", "db_object_id", "db_object_symbol", \
-            "qualifiers", "go_id", "db_references", \
-            "evidence_code", "with", "aspect", \
-            "db_object_name", "db_object_synonyms", \
-            "db_object_type", "taxons", "date", \
-            "assigned_by", "organism_name"]
+    __slots__ = ["db", "db_object_id", "db_object_symbol",
+                 "qualifiers", "go_id", "db_references",
+                 "evidence_code", "with", "aspect",
+                 "db_object_name", "db_object_synonyms",
+                 "db_object_type", "taxons", "date",
+                 "assigned_by", "organism_name"]
 
     def __init__(self, *args, **kwds):
-        """Constructs an annotation. Use keyword arguments to specify the values
-        of the different attributes. If you use positional arguments, the order
-        of the arguments must be the same as they are in the GO annotation file.
-        No syntax checking is done on the values entered, but attributes with a
-        maximum cardinality more than one are converted to lists automatically.
-        (If you specify a string with vertical bar separators as they are in the
-        input file, the string will be splitted appropriately)."""
+        """Constructs an annotation. Use keyword arguments to specify the
+        values of the different attributes. If you use positional arguments,
+        the order of the arguments must be the same as they are in the GO
+        annotation file. No syntax checking is done on the values entered,
+        but attributes with a maximum cardinality more than one are converted
+        to lists automatically. (If you specify a string with vertical bar
+        separators as they are in the input file, the string will be
+        splitted appropriately)."""
         if len(args) == 1 and not kwds:
             args = args[0].strip().split("\t")
         for (name, value) in zip(self.__slots__, args):
@@ -126,8 +127,8 @@ class Annotation(object):
                 setattr(self, attr, value.split("|"))
 
     def __repr__(self):
-        params = ",".join("%s=%r" % (name, getattr(self, name)) \
-                for name in self.__slots__)
+        params = ",".join("%s=%r" % (name, getattr(self, name))
+                          for name in self.__slots__)
         return "%s(%s)" % (self.__class__.__name__, params)
 
 
@@ -136,7 +137,7 @@ class AnnotationFile(object):
 
     def __init__(self, fp, organism_name):
         """Creates an annotation file parser that reads the given file-like
-        object. You can also specify filenames. If the filename ends in ``.gz``,
+        object. You can also specify filenames. If the filename ends in ``.gz``
         the file is assumed to contain gzipped data and it will be unzipped
         on the fly. Example:
 
@@ -166,13 +167,13 @@ class AnnotationFile(object):
                 # This is a comment line
                 continue
             try:
-                #append the organism name to the line, the file. Some wiggleling is necessary, because the last
-                #part of the line is actually a newline and three tab
-                line = line[0:-2]+ self.organism_name
+                # append the organism name to the line, the file.
+                # Some wiggleling is necessary, because the last
+                # part of the line is actually a newline and three tab
+                line = line[0:-2] + self.organism_name
                 yield Annotation(line)
             except TypeError as ex:
-                raise ParseError("cannot parse annotation", self.lineno)
+                raise SyntaxError("cannot parse annotation", self.lineno)
 
     def __iter__(self):
         return self.annotations()
-

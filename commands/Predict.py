@@ -1,23 +1,16 @@
-from Utils import *
-from seeds import interpro
-from seeds import hmmer
-from graphs import Graph
-from graphs import collection
-from graphs import homology
-from graphs import combination
-from GOTool import GeneOntology
-from diffusion import Diffusion
-from diffusion.S2FLabelPropagation import S2FLabelPropagation
-
-from scipy import sparse
-from scipy.sparse.linalg import lsqr
-from sklearn.preprocessing import binarize
-
-import pandas as pd
-import numpy as np
 import os
 import subprocess
 import sys
+
+import pandas as pd
+from scipy import sparse
+
+from diffusion import Diffusion
+from diffusion.S2FLabelPropagation import S2FLabelPropagation
+from GOTool import GeneOntology
+from graphs import collection, combination, homology
+from seeds import hmmer, interpro
+from Utils import ColourClass, Configuration, FancyApp, Utilities
 
 
 class Predict(FancyApp.FancyApp):
@@ -30,26 +23,43 @@ class Predict(FancyApp.FancyApp):
         if os.path.exists(self.run_config):
             self.tell('Run configuration provided, loading: ', self.run_config)
             Configuration.load_run(self.run_config)
+            run_conf = Configuration.RUN_CONFIG
 
-            self.config_file = os.path.expanduser(Configuration.RUN_CONFIG.get('configuration', 'config_file'))
-            self.alias = Configuration.RUN_CONFIG.get('configuration', 'alias')
-            self.obo = os.path.expanduser(Configuration.RUN_CONFIG.get('configuration', 'obo'))
-            self.fasta = os.path.expanduser(Configuration.RUN_CONFIG.get('configuration', 'fasta'))
-            self.cpu = os.path.expanduser(Configuration.RUN_CONFIG.get('configuration', 'cpu', fallback='infer'))
+            self.config_file = os.path.expanduser(
+                run_conf.get('configuration', 'config_file'))
+            self.alias = run_conf.get('configuration', 'alias')
+            self.obo = os.path.expanduser(run_conf.get('configuration',
+                                                       'obo'))
+            self.fasta = os.path.expanduser(run_conf.get('configuration',
+                                                         'fasta'))
+            self.cpu = os.path.expanduser(run_conf.get('configuration',
+                                                       'cpu',
+                                                       fallback='infer'))
 
-            self.combined_graph = Configuration.RUN_CONFIG.get('graphs', 'combined_graph', fallback='compute')
-            self.graph_collection = Configuration.RUN_CONFIG.get('graphs', 'graph_collection', fallback='compute')
-            self.homology_graph = Configuration.RUN_CONFIG.get('graphs', 'homology_graph', fallback='compute')
+            self.combined_graph = run_conf.get('graphs', 'combined_graph',
+                                               fallback='compute')
+            self.graph_collection = run_conf.get('graphs', 'graph_collection',
+                                                 fallback='compute')
+            self.homology_graph = run_conf.get('graphs', 'homology_graph',
+                                               fallback='compute')
 
-            self.interpro_output = Configuration.RUN_CONFIG.get('seeds', 'interpro_output', fallback='compute')
-            self.hmmer_output = Configuration.RUN_CONFIG.get('seeds', 'hmmer_output', fallback='compute')
+            self.interpro_output = run_conf.get('seeds',
+                                                'interpro_output',
+                                                fallback='compute')
+            self.hmmer_output = run_conf.get('seeds',
+                                             'hmmer_output',
+                                             fallback='compute')
 
-            self.hmmer_blacklist = Configuration.RUN_CONFIG.get('blacklists', 'hmmer_blacklist', fallback='compute')
-            self.transfer_blacklist = Configuration.RUN_CONFIG.get('blacklists',
-                                                                   'transfer_blacklist', fallback='compute')
+            self.hmmer_blacklist = run_conf.get('blacklists',
+                                                'hmmer_blacklist',
+                                                fallback='compute')
+            self.transfer_blacklist = run_conf.get('blacklists',
+                                                   'transfer_blacklist',
+                                                   fallback='compute')
 
-            self.goa_clamp = Configuration.RUN_CONFIG.get('functions', 'goa_clamp', fallback='compute')
-
+            self.goa_clamp = run_conf.get('functions',
+                                          'goa_clamp',
+                                          fallback='compute')
         else:
             Configuration.load_configuration(self.config_file)
 
@@ -67,7 +77,8 @@ class Predict(FancyApp.FancyApp):
             self.hmmer_output = os.path.expanduser(args.hmmer_seed)
 
             self.hmmer_blacklist = os.path.expanduser(args.hmmer_blacklist)
-            self.transfer_blacklist = os.path.expanduser(args.transfer_blacklist)
+            self.transfer_blacklist = os.path.expanduser(
+                                            args.transfer_blacklist)
 
             self.goa_clamp = os.path.expanduser(args.goa_clamp)
 
@@ -79,13 +90,20 @@ class Predict(FancyApp.FancyApp):
         self.blastp = Configuration.CONFIG.get('commands', 'blastp')
         self.makeblastdb = Configuration.CONFIG.get('commands', 'makeblastdb')
 
-        self.string_links = Configuration.CONFIG.get('databases', 'string_links')
-        self.string_sequences = Configuration.CONFIG.get('databases', 'string_sequences')
-        self.string_species = Configuration.CONFIG.get('databases', 'string_species')
-        self.uniprot_sprot = Configuration.CONFIG.get('databases', 'uniprot_sprot')
-        self.uniprot_goa = Configuration.CONFIG.get('databases', 'uniprot_goa')
-        self.filtered_goa = Configuration.CONFIG.get('databases', 'filtered_goa')
-        self.filtered_sprot = Configuration.CONFIG.get('databases', 'filtered_sprot')
+        self.string_links = Configuration.CONFIG.get('databases',
+                                                     'string_links')
+        self.string_sequences = Configuration.CONFIG.get('databases',
+                                                         'string_sequences')
+        self.string_species = Configuration.CONFIG.get('databases',
+                                                       'string_species')
+        self.uniprot_sprot = Configuration.CONFIG.get('databases',
+                                                      'uniprot_sprot')
+        self.uniprot_goa = Configuration.CONFIG.get('databases',
+                                                    'uniprot_goa')
+        self.filtered_goa = Configuration.CONFIG.get('databases',
+                                                     'filtered_goa')
+        self.filtered_sprot = Configuration.CONFIG.get('databases',
+                                                       'filtered_sprot')
 
         ec = Configuration.CONFIG.get('options', 'evidence_codes')
         self.evidence_codes = ec if ec == 'experimental' else ec.split(',')
@@ -94,29 +112,33 @@ class Predict(FancyApp.FancyApp):
                 self.alias == '' or
                 not os.path.exists(self.obo) or
                 not os.path.exists(self.fasta)):
-            self.warning('The configuration file must include readable files and an alias, please revise these'
-                         'arguments:\n'
-                         '\tconfig_file\n'
-                         '\talias\n'
-                         '\tobo\n'
+            self.warning("The configuration file must include readable " +
+                         "files and an alias, please revise these" +
+                         'arguments:\n' +
+                         '\tconfig_file\n' +
+                         '\talias\n' +
+                         '\tobo\n' +
                          '\tfasta')
             sys.exit(1)
 
         self.summary_and_continue()
 
-        self.output_dir = os.path.join(self.installation_directory, 'output', self.alias)
-        self.seed_dir_IP = os.path.join(self.installation_directory, 'seeds/interpro')
-        self.seed_dir_H = os.path.join(self.installation_directory, 'seeds/hmmer')
+        self.output_dir = os.path.join(self.installation_directory,
+                                       'output', self.alias)
+        self.seed_dir_IP = os.path.join(self.installation_directory,
+                                        'seeds/interpro')
+        self.seed_dir_H = os.path.join(self.installation_directory,
+                                       'seeds/hmmer')
         self.go = GeneOntology.GeneOntology(self.obo, verbose=True)
         self.terms = None
         self.proteins = None
         self.prediction = None
 
         if self.cpu == 'infer':
-            self.cpu = len(os.sched_getaffinity(0))  # https://docs.python.org/3/library/os.html#os.cpu_count
+            # https://docs.python.org/3/library/os.html#os.cpu_count
+            self.cpu = len(os.sched_getaffinity(0))
 
     def run(self):
-
         # 1. create output directory
         self.create_output_directory()
         # 2. Exract a list of terms and proteins
@@ -128,13 +150,18 @@ class Predict(FancyApp.FancyApp):
         # 5. run (or reuse) graph collection
         graph_collection = self.run_graph_collection()
         for k, g in graph_collection.items():
-            sparse.save_npz(os.path.join(self.output_dir, k+'_collection.npz'), g)
+            sparse.save_npz(os.path.join(self.output_dir,
+                                         k+'_collection.npz'),
+                            g)
         # 5. run (or reuse) homology graph
         graph_homology = self.run_graph_homology()
-        sparse.save_npz(os.path.join(self.output_dir, 'homology.npz'), graph_homology)
+        sparse.save_npz(os.path.join(self.output_dir, 'homology.npz'),
+                        graph_homology)
         # 6. GOA clamp if provided
         # 7. graph combination
-        combined_graph = self.combine_graphs(graph_collection, graph_homology, ip_seed)
+        combined_graph = self.combine_graphs(graph_collection,
+                                             graph_homology,
+                                             ip_seed)
         # 8. prepare diffusion kernel
         kernel_params = {'lambda': 0.1}
         diff = S2FLabelPropagation(combined_graph, self.proteins, self.terms)
@@ -147,7 +174,8 @@ class Predict(FancyApp.FancyApp):
         self.prediction = 0.9 * ip_diff + 0.1 * hmmer_diff
 
     def write_prediction(self, filename):
-        Diffusion._write_results(self.prediction, self.proteins, self.terms, filename)
+        Diffusion._write_results(self.prediction, self.proteins, self.terms,
+                                 filename)
 
     def create_output_directory(self):
         if not os.path.isdir(self.output_dir):
@@ -163,17 +191,22 @@ class Predict(FancyApp.FancyApp):
         self.tell('Building GO structure')
         self.go.build_structure()
         self.tell('Extracting list of GO Terms from structure')
-        self.terms = pd.DataFrame(list(enumerate(sorted(self.go.terms.keys()))))
+        self.terms = pd.DataFrame(
+                        list(enumerate(sorted(self.go.terms.keys()))))
         self.terms.columns = ['term idx', 'term id']
         self.terms.set_index('term id', inplace=True)
         self.terms.to_pickle(os.path.join(self.output_dir, 'terms.df'))
 
     def run_interpro(self):
-        if not os.path.exists(self.interpro_output) or self.interpro_output == 'compute':
-            self.interpro_output = os.path.join(self.output_dir, self.alias + '_IP')
+        if not os.path.exists(self.interpro_output) or\
+                self.interpro_output == 'compute':
+            self.interpro_output = os.path.join(self.output_dir,
+                                                self.alias + '_IP')
             if not os.path.exists(self.interpro_output):
                 self.tell('Running InterPro')
-                command = self.interpro + ' -i ' + self.fasta + ' -goterms -iprlookup -f TSV -o ' + self.interpro_output
+                command = self.interpro + ' -i ' + self.fasta +\
+                                          ' -goterms -iprlookup -f TSV -o ' +\
+                                          self.interpro_output
                 subprocess.call(command, shell=True)
             else:
                 self.tell('InterPro file found, skipping computation...')
@@ -183,7 +216,9 @@ class Predict(FancyApp.FancyApp):
         seed_file = os.path.join(self.seed_dir_IP, self.alias + '.seed.npz')
         if not os.path.exists(seed_file):
             self.tell('Building InterPro seed file')
-            interpro_seed = interpro.InterProSeed(self.interpro_output, self.proteins, self.terms, self.go)
+            interpro_seed = interpro.InterProSeed(self.interpro_output,
+                                                  self.proteins,
+                                                  self.terms, self.go)
             # TODO: methods is here only to debug stuff, remove
             methods = interpro_seed.process_output()
             for k, s in methods.items():
@@ -197,12 +232,17 @@ class Predict(FancyApp.FancyApp):
 
     def run_hmmer(self):
         out = os.path.join(self.output_dir, self.alias + '.hmmer')
-        if not os.path.exists(self.hmmer_output) or self.hmmer_output == 'compute':
-            self.hmmer_output = os.path.join(self.output_dir, self.alias + '_H')
+        if not os.path.exists(self.hmmer_output) or\
+                self.hmmer_output == 'compute':
+            self.hmmer_output = os.path.join(self.output_dir,
+                                             self.alias + '_H')
             if not os.path.exists(self.hmmer_output):
                 self.tell('Running HMMer')
-                command = self.hmmer + ' --cpu ' + str(self.cpu) + ' --noali -o ' + out + \
-                    ' --tblout ' + self.hmmer_output + ' ' + self.fasta + ' ' + self.filtered_sprot
+                command = self.hmmer + ' --cpu ' + str(self.cpu) +\
+                                       ' --noali -o ' + out + \
+                                       ' --tblout ' + self.hmmer_output +\
+                                       ' ' + self.fasta + ' ' +\
+                                       self.filtered_sprot
                 self.tell(command)
                 subprocess.call(command, shell=True)
             else:
@@ -214,8 +254,10 @@ class Predict(FancyApp.FancyApp):
         evalue_file = os.path.join(self.seed_dir_H, self.alias + '.evalue')
         if not os.path.exists(seed_file):
             self.tell('Building HMMer seed file')
-            hmmer_seed = hmmer.HMMerSeed(self.hmmer_output, self.proteins, self.terms, self.go,
-                                         self.hmmer_blacklist, self.filtered_goa)
+            hmmer_seed = hmmer.HMMerSeed(self.hmmer_output, self.proteins,
+                                         self.terms, self.go,
+                                         self.hmmer_blacklist,
+                                         self.filtered_goa)
             hmmer_seed.process_output(evalue_file=evalue_file)
             seed = hmmer_seed.get_seed()
             sparse.save_npz(seed_file, seed)
@@ -225,19 +267,26 @@ class Predict(FancyApp.FancyApp):
         return seed
 
     def run_graph_collection(self):
-        string_dir = os.path.join(self.installation_directory, 'data/STRINGSequences')
+        string_dir = os.path.join(self.installation_directory,
+                                  'data/STRINGSequences')
         core_ids = os.path.join(self.installation_directory, 'data/coreIds')
         orthologs_dir = os.path.join(self.installation_directory, 'orthologs')
-        graphs_dir = os.path.join(self.installation_directory, 'graphs/collection')
-        col = collection.Collection(self.fasta, self.proteins, string_dir, self.string_links, core_ids,
-                                    self.output_dir, orthologs_dir, graphs_dir, self.alias, self.cpu,
+        graphs_dir = os.path.join(self.installation_directory,
+                                  'graphs/collection')
+        col = collection.Collection(self.fasta, self.proteins, string_dir,
+                                    self.string_links, core_ids,
+                                    self.output_dir, orthologs_dir, graphs_dir,
+                                    self.alias, self.cpu,
                                     self.transfer_blacklist, 1e-6, 80.0, 60.0)
         col.compute_graph()
         return col.get_graph()
 
     def run_graph_homology(self):
-        graphs_dir = os.path.join(self.installation_directory, 'graphs/homology')
-        hom = homology.Homology(self.fasta, self.proteins, graphs_dir, self.alias)
+        graphs_dir = os.path.join(self.installation_directory,
+                                  'graphs/homology')
+        hom = homology.Homology(self.fasta, self.proteins,
+                                graphs_dir,
+                                self.alias)
         hom.compute_graph()
         return hom.get_graph()
 
@@ -245,21 +294,25 @@ class Predict(FancyApp.FancyApp):
         pass
 
     def combine_graphs(self, graph_collection, graph_homology, ip_seed):
-        comb = combination.Combination(self.proteins, graph_collection, graph_homology, ip_seed)
+        comb = combination.Combination(self.proteins, graph_collection,
+                                       graph_homology, ip_seed)
         comb.compute_graph()
         return comb.get_graph()
 
     def summary_and_continue(self):
         summary = 'These are the loaded values \n'
-        summary += ColourClass.coloured_string(ColourClass.bcolors.HEADER, '\t[INSTALLATION CONFIGURATION]\n')
-        summary += '\tInstallation directory:\t\t' + self.installation_directory + '\n\n'
-
+        summary += ColourClass.coloured_string(
+                        ColourClass.bcolors.HEADER,
+                        "\t[INSTALLATION CONFIGURATION]\n")
+        summary += '\tInstallation directory:\t\t'
+        summary += self.installation_directory + '\n\n'
         summary += '\tPath to InterPro executable:\t' + self.interpro + '\n'
         summary += '\tPath to HMMer:\t\t\t' + self.hmmer + '\n'
         summary += '\tPath to blastp:\t\t\t' + self.blastp + '\n'
         summary += '\tPath to makeblastdb:\t\t' + self.makeblastdb + '\n\n'
 
-        # TODO: These warnings are extremely unlikely to occur because the installation should put all of these in the
+        # TODO: These warnings are extremely unlikely to occur because
+        # the installation should put all of these in the
         # right values. This code could be simplified.
         dbs = [
             ('STRING interaction database:\t', self.string_links),
@@ -276,12 +329,16 @@ class Predict(FancyApp.FancyApp):
                 summary += database + '\n'
 
         summary += '\n\tFiltered UniProt GOA:\t\t' + self.filtered_goa + '\n'
-        summary += '\tFiltered UniProt SwissProt:\t' + self.filtered_sprot + '\n\n'
+        summary += '\tFiltered UniProt SwissProt:\t' + self.filtered_sprot
+        summary += '\n\n'
 
-        summary += '\tEvidence Codes:\t\t\t' + str(self.evidence_codes) + '\n\n'
+        summary += '\tEvidence Codes:\t\t\t' + str(self.evidence_codes)
+        summary += '\n\n'
 
-        summary += ColourClass.coloured_string(ColourClass.bcolors.HEADER, '\t[RUN CONFIGURATION]\n')
-        # summary += '\tInstallation configuration file: ' + self.config_file + '\n'
+        summary += ColourClass.coloured_string(ColourClass.bcolors.HEADER,
+                                               '\t[RUN CONFIGURATION]\n')
+        # summary += '\tInstallation configuration file: ' +\
+        #            self.config_file + '\n'
         summary += '\tAlias:\t\t\t\t' + self.alias + '\n'
         summary += '\tOBO file:\t\t\t' + self.obo + '\n'
         summary += '\tFasta file:\t\t\t' + self.fasta + '\n\n'
@@ -294,8 +351,8 @@ class Predict(FancyApp.FancyApp):
         summary += '\tHMMer seed:\t\t\t' + self.hmmer_output + '\n'
 
         summary += '\tHMMer black list:\t\t' + self.hmmer_blacklist + '\n'
-        summary += '\tTransfer black list:\t\t' + self.transfer_blacklist + '\n'
-
+        summary += '\tTransfer black list:\t\t'
+        summary += self.transfer_blacklist + '\n'
         summary += '\tGOA clamp:\t\t\t' + self.goa_clamp + '\n'
 
         summary += 'Do you want to continue with these settings?'

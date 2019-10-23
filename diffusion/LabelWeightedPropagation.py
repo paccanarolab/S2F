@@ -1,11 +1,9 @@
-from Utils import *
-from diffusion import Diffusion
-
 from scipy import sparse
 from scipy.sparse import linalg
 
-import pandas as pd
-import numpy as np
+from diffusion import Diffusion
+from Utils import Utilities
+
 
 class LabelWeightedPropagation(Diffusion):
 
@@ -16,12 +14,15 @@ class LabelWeightedPropagation(Diffusion):
         Parameters
         ----------
         graph : scipy.sparse
-            Graph in which the labels should be diffused (before the kernel is built)
+            Graph in which the labels should be diffused
+            (before the kernel is built)
         proteins : pandas.DataFrame
-            Indices of the proteins that conform the graph. This DataFrame can be built using the
+            Indices of the proteins that conform the graph.
+            This DataFrame can be built using the
             stand-alone 'utils' command
         terms : pandas.DataFrame
-            Indices of the GO terms that will be mapped to the diffused seed. This DataFrame can be built using the
+            Indices of the GO terms that will be mapped to
+            the diffused seed. This DataFrame can be built using the
             stand-alone 'utils' command
         """
         super(LabelWeightedPropagation, self).__init__()
@@ -46,17 +47,20 @@ class LabelWeightedPropagation(Diffusion):
         filename : str
             Path to write the results
         """
-        Diffusion._write_results(self.latest_diffusion, self.proteins, self.terms, filename)
+        Diffusion._write_results(self.latest_diffusion,
+                                 self.proteins,
+                                 self.terms, filename)
 
     def diffuse(self, initial_guess, **kwargs):
         r"""
-        Diffuses the initial labelling `initial_guess` into the built kernel, if the kernel hasn't been built, it will
+        Diffuses the initial labelling `initial_guess`
+        into the built kernel, if the kernel hasn't been built, it will
         build it using `compute_kernel`
         Parameters
         ----------
         initial_guess : scipy.sparse matrix
-            The initial labelling matrix that will be diffused on the graph, shapes must be consistent to the given
-            graph.
+            The initial labelling matrix that will be diffused on the
+            graph, shapes must be consistent to the given graph.
 
         Returns
         -------
@@ -65,7 +69,8 @@ class LabelWeightedPropagation(Diffusion):
 
         Notes
         -----
-        This propagation method requires the kernel to be recalculated every time
+        This propagation method requires the kernel to b
+        recalculated every time
         """
         self.tell('Got the initial labelling')
         self.initial_guess = initial_guess.tocsc()
@@ -81,7 +86,8 @@ class LabelWeightedPropagation(Diffusion):
         n = self.initial_guess.shape[0]
         m = self.initial_guess.shape[1]
         for i in range(m):
-            k = self.initial_guess[:, i].todense() + self.kernel_params['gamma']
+            k = self.initial_guess[:, i].todense() +\
+                self.kernel_params['gamma']
             k = k.reshape((1, n))
             K = sparse.spdiags(k, 0, n, n)
             kernel = linalg.inv((K + self.kernel).tocsc())*K
@@ -99,7 +105,8 @@ class LabelWeightedPropagation(Diffusion):
     def compute_kernel(self, **kwargs):
         r"""
         Combines the S2F kernel with the initial labelling as weights.
-        Check `S2FLabelPropagation` for a description on the S2F kernel. The description here takes once the
+        Check `S2FLabelPropagation` for a description on the S2F kernel.
+        The description here takes once the
         Laplacian is already computed
 
         .. math:: (I + \lambda L)^{-1}
@@ -109,16 +116,21 @@ class LabelWeightedPropagation(Diffusion):
         Parameters
         ----------
         kwargs
-            Parameters to compute the kernel, the following entries will be handled:
+            Parameters to compute the kernel, the following entries
+            will be handled:
             * 'lambda' : float
-                To be used in the transformation described above. Defaults to 1.0
+                To be used in the transformation described above.
+                Defaults to 1.0
 
         Notes
         -----
-        The kernel in this diffusion method is related to the initial labelling, and therefore this method will be
-        called from the `diffuse` method once, and the final kernel will be built iterating over the columns.
+        The kernel in this diffusion method is related to the initial
+        labelling, and therefore this method will be called from the
+        `diffuse` method once, and the final kernel will be built
+        iterating over the columns.
         """
-        if self.initial_guess is not None and self.set_kernel_params(**kwargs):  # check that we have all we need
+        if self.initial_guess is not None and self.set_kernel_params(**kwargs):
+            # check that we have all we need
             self.tell('Diffusion Kernel computation started...')
             n = self.graph.shape[0]
             self.tell('Computing Jaccard matrix...')
@@ -137,14 +149,16 @@ class LabelWeightedPropagation(Diffusion):
             lambdaL = L_S2F.multiply(self.kernel_params['lambda'])
 
             # compute the max of every protein
-            k = self.initial_guess.max(axis=1).todense() + self.kernel_params['gamma']
+            k = self.initial_guess.max(axis=1).todense() +\
+                self.kernel_params['gamma']
             k = k.reshape((1, n))
             K = sparse.spdiags(k, 0, n, n)
             self.kernel = linalg.inv((K + lambdaL).tocsc()) * K
 
         else:
             if self.initial_guess is None:
-                self.tell('Waiting for the initial labelling to be setup before computing the kernel...')
+                self.tell('Waiting for the initial labelling to be' +
+                          'setup before computing the kernel...')
             else:
                 self.warning('Wrong parameters in Compute Kernel')
                 raise ValueError('Wrong parameters in Compute Kernel')

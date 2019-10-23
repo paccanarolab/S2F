@@ -1,23 +1,25 @@
 import numpy as np
+
 from GOTool import GeneOntology
-from Utils import *
+from Utils import ColourClass, FancyApp
 
 
 class BuildMatrices(FancyApp.FancyApp):
 
     def __init__(
-            self, 
+            self,
             interpro,
             interpro_diff,
             interpro_cm,
-            hmmer, 
+            hmmer,
             hmmer_diff,
             hmmer_cm,
             s2f,
-            goa, 
-            fasta, 
+            goa,
+            fasta,
             obo,
-            domains=['cellular_component', 'biological_process', 'molecular_function'],
+            domains=['cellular_component', 'biological_process',
+                     'molecular_function'],
             verbose=True):
 
         super(BuildMatrices, self).__init__()
@@ -25,7 +27,7 @@ class BuildMatrices(FancyApp.FancyApp):
 
         self.interpro = open(interpro, 'r')
         self.interpro_values = None
-        
+
         self.interpro_diff = open(interpro_diff, 'r')
         self.interpro_diff_values = None
 
@@ -34,7 +36,6 @@ class BuildMatrices(FancyApp.FancyApp):
 
         self.hmmer = open(hmmer, 'r')
         self.hmmer_values = None
-        
         self.hmmer_diff = open(hmmer_diff, 'r')
         self.hmmer_diff_values = None
 
@@ -57,7 +58,8 @@ class BuildMatrices(FancyApp.FancyApp):
 
         self.__verbose__ = verbose
 
-        evidence_codes = ['EXP', 'IDA', 'IPI', 'IMP', 'IGI', 'IEP', 'TAS','IC']
+        evidence_codes = ['EXP', 'IDA', 'IPI', 'IMP',
+                          'IGI', 'IEP', 'TAS', 'IC']
         self.gn = GeneOntology.GeneOntology(self.obo.name, verbose=True)
         self.gn.build_structure()
         self.gn.load_annotation_file(self.goa.name, 's2f', evidence_codes)
@@ -70,7 +72,8 @@ class BuildMatrices(FancyApp.FancyApp):
 
     def compute_information_content(self):
         for term, idx in self.go_terms_idx.items():
-            self.information_content[idx] = self.gn.find_term(term).information_content('s2f')
+            self.information_content[idx] = self.gn.find_term(term)\
+                                                .information_content('s2f')
 
     def inner_infer_headers(self, fp):
         for line in fp:
@@ -79,7 +82,6 @@ class BuildMatrices(FancyApp.FancyApp):
             self.go_terms.add(parts[1])
 
     def infer_headers(self):
-       
         self.tell('Inferring genes and terms from InterPro')
         self.inner_infer_headers(self.interpro)
 
@@ -129,25 +131,30 @@ class BuildMatrices(FancyApp.FancyApp):
 
         self.interpro_values = np.zeros((len(self.genes), len(self.go_terms)))
         self.hmmer_values = np.zeros((len(self.genes), len(self.go_terms)))
-        self.interpro_diff_values = np.zeros((len(self.genes), len(self.go_terms)))
-        self.hmmer_diff_values = np.zeros((len(self.genes), len(self.go_terms)))
-        self.interpro_cm_values = np.zeros((len(self.genes), len(self.go_terms)))
+        self.interpro_diff_values = np.zeros((len(self.genes),
+                                              len(self.go_terms)))
+        self.hmmer_diff_values = np.zeros((len(self.genes),
+                                           len(self.go_terms)))
+        self.interpro_cm_values = np.zeros((len(self.genes),
+                                            len(self.go_terms)))
         self.hmmer_cm_values = np.zeros((len(self.genes), len(self.go_terms)))
         self.s2f_values = np.zeros((len(self.genes), len(self.go_terms)))
         self.goa_values = np.zeros((len(self.genes), len(self.go_terms)))
         self.information_content = np.zeros(len(self.go_terms))
- 
+
     def inner_infer_values_goa(self, value_array):
         annotations = self.gn.get_annotations('s2f')
         for i, row in annotations.iterrows():
-            value_array[self.genes_idx[row['Protein']], self.go_terms_idx[row['GO ID']]] = 1.0
+            value_array[self.genes_idx[row['Protein']],
+                        self.go_terms_idx[row['GO ID']]] = 1.0
 
     def inner_infer_values(self, fp, value_array):
         fp.seek(0)
         for line in fp:
             parts = line.split()
             if float(parts[2]) > 0:
-                value_array[self.genes_idx[parts[0]], self.go_terms_idx[parts[1]]] = float(parts[2])
+                value_array[self.genes_idx[parts[0]],
+                            self.go_terms_idx[parts[1]]] = float(parts[2])
 
     def infer_values(self):
         self.tell('Inferring values from InterPro')
