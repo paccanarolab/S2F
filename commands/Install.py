@@ -299,6 +299,11 @@ class Install(FancyApp.FancyApp):
 
         self.tell('Accepting the following evindece codes:', self.evidence_codes)
 
+        # filter evidence codes using awk
+        command = "awk '$6~/" + '|'.join(self.evidence_codes)+"/{print $0}' " + \
+                  self.uniprot_goa.split('.gz')[0] + " > " + experimental_goa
+        subprocess.call(command, shell=True)
+        # keep only SwissProt annotations
         self.filtered_goa = os.path.join(self.installation_directory, 'data/UniprotKB/filtered_goa')
         fg = open(self.filtered_goa, 'w')
         i = 0
@@ -308,7 +313,7 @@ class Install(FancyApp.FancyApp):
                 self.tell('Process:', i/num_lines*100.0,'%')
             if not line.startswith('!'):
                 fields = line.split('\t')
-                if fields[1] in ids and fields[6] in self.evidence_codes:
+                if fields[1] in ids:
                     proteins_with_function.add(fields[1])
                     fg.write(line)
         fg.close()
