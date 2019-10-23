@@ -289,10 +289,6 @@ class Install(FancyApp.FancyApp):
         self.tell('Gathered', len(ids), 'SwissProt IDs')
 
         self.tell('Filtering UniProt GOA')
-        experimental_goa = self.uniprot_goa.split('.gz')[0] + '.exp'
-
-        num_lines = Utilities.wccount(experimental_goa)
-
         if self.evidence_codes == 'experimental':
             self.evidence_codes = GeneOntology.GeneOntology.EXPERIMENTAL_EVIDENCE_CODES
         Configuration.CONFIG.set('options', 'evidence_codes', ','.join(self.evidence_codes))
@@ -300,9 +296,12 @@ class Install(FancyApp.FancyApp):
         self.tell('Accepting the following evindece codes:', self.evidence_codes)
 
         # filter evidence codes using awk
+        experimental_goa = self.uniprot_goa.split('.gz')[0] + '.exp'
         command = "awk '$6~/" + '|'.join(self.evidence_codes)+"/{print $0}' " + \
                   self.uniprot_goa.split('.gz')[0] + " > " + experimental_goa
         subprocess.call(command, shell=True)
+
+        num_lines = Utilities.wccount(experimental_goa)
         # keep only SwissProt annotations
         self.filtered_goa = os.path.join(self.installation_directory, 'data/UniprotKB/filtered_goa')
         fg = open(self.filtered_goa, 'w')
