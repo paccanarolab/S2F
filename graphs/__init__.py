@@ -1,8 +1,9 @@
-from Utils import *
-from scipy import sparse
+import abc
 
 import numpy as np
-import abc
+from scipy import sparse
+
+from Utils import FancyApp
 
 
 class Graph(FancyApp.FancyApp):
@@ -32,8 +33,8 @@ class Graph(FancyApp.FancyApp):
     @staticmethod
     def assert_lexicographical_order(df, p1='Protein 1', p2='Protein 2'):
         """
-        Guarantees that lexicographical order is maintained in the dataframe so that
-        # that df[p1] < df_col[p2]
+        Guarantees that lexicographical order is maintained in the
+        dataframe so that df[p1] < df_col[p2]
         :param df: The dataframe to modify
         :param p1: the name of the min column
         :param p2: the name of the max column
@@ -73,8 +74,10 @@ class Graph(FancyApp.FancyApp):
         :param n: number of nodes in the matrix
         :return: rows, cols in 2D coordinates
         """
-        rows = n - 2 - np.floor(np.sqrt(-8 * indices + 4 * n * (n - 1) - 7) / 2.0 - 0.5)
-        cols = indices + rows + 1 - n * (n - 1) / 2 + (n - rows) * ((n - rows) - 1) / 2
+        rows = n - 2 - np.floor(np.sqrt(-8 * indices + 4 * n * (n - 1) - 7) /
+                                2.0 - 0.5)
+        cols = indices + rows + 1 - n * (n - 1) / 2 +\
+            (n - rows) * ((n - rows) - 1) / 2
         return rows, cols
 
     @staticmethod

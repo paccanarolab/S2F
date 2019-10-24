@@ -1,10 +1,8 @@
-from Utils import *
+import numpy as np
+from scipy import sparse
+
 from diffusion import Diffusion
 
-from scipy import sparse
-from scipy.sparse import linalg
-
-import numpy as np
 
 class ConsistencyMethod(Diffusion):
     r"""
@@ -13,13 +11,14 @@ class ConsistencyMethod(Diffusion):
     Parameters
     ----------
     graph : scipy.sparse
-        Graph in which the labels should be diffused (before the kernel is built)
+        Graph in which the labels should be diffused (before the kernel
+        is built)
     proteins : pandas.DataFrame
-        Indices of the proteins that conform the graph. This DataFrame can be built using the
-        stand-alone 'utils' command
+        Indices of the proteins that conform the graph.
+        This DataFrame can be built using the stand-alone 'utils' command
     terms : pandas.DataFrame
-        Indices of the GO terms that will be mapped to the diffused seed. This DataFrame can be built using the
-        stand-alone 'utils' command
+        Indices of the GO terms that will be mapped to the diffused seed.
+        This DataFrame can be built using the stand-alone 'utils' command
     """
     def __init__(self, graph, proteins, terms):
         super(ConsistencyMethod, self).__init__()
@@ -44,17 +43,19 @@ class ConsistencyMethod(Diffusion):
         filename : str
             Path to write the results
         """
-        Diffusion._write_results(self.latest_diffusion, self.proteins, self.terms, filename)
+        Diffusion._write_results(self.latest_diffusion, self.proteins,
+                                 self.terms, filename)
 
     def diffuse(self, initial_guess, **kwargs):
         r"""
-        Diffuses the initial labelling `initial_guess` into the built kernel, if the kernel hasn't been built, it will
+        Diffuses the initial labelling `initial_guess` into
+        the built kernel, if the kernel hasn't been built, it will
         build it using `compute_kernel`
         Parameters
         ----------
         initial_guess : scipy.sparse matrix
-            The initial labelling matrix that will be diffused on the graph, shapes must be consistent to the given
-            graph.
+            The initial labelling matrix that will be diffused on the graph,
+            shapes must be consistent to the given graph.
 
         Returns
         -------
@@ -63,11 +64,14 @@ class ConsistencyMethod(Diffusion):
 
         Notes
         -----
-        The final labelling is kept in `self.latest_diffusion`, for access convenience. This enables a subsequent
-        call to `write_results` that does not require a re-calculation of the final labelling.
+        The final labelling is kept in `self.latest_diffusion`,
+        for access convenience. This enables a subsequent
+        call to `write_results` that does not require a re-calculation
+        of the final labelling.
         """
         self.tell('Starting diffusion...')
-        self.latest_diffusion = self.beta * self.kernel * initial_guess.todense()
+        self.latest_diffusion = self.beta * self.kernel *\
+            initial_guess.todense()
         self.latest_diffusion = sparse.coo_matrix(self.latest_diffusion)
         self.tell('done')
         return self.latest_diffusion
@@ -80,9 +84,11 @@ class ConsistencyMethod(Diffusion):
         Parameters
         ----------
         kwargs
-            Parameters to compute the kernel, the following entries will be handled:
+            Parameters to compute the kernel, the following
+            entries will be handled:
             * 'alpha' : float
-                To be used in the transformation described above. Defaults to 1.0
+                To be used in the transformation described above.
+                Defaults to 1.0
 
         Notes
         -----
@@ -94,18 +100,18 @@ class ConsistencyMethod(Diffusion):
             self.tell('Diffusion Kernel computation started...')
             # build D
             n = self.graph.shape[0]
-            #sums = self.graph.sum(1)  # sum every column per row
-
+            # sums = self.graph.sum(1)  # sum every column per row
             # in case there are unconnected parts in the matrix
-            #indNonZeros = np.where(sums != 0)
-            #diagonalValues = np.zeros(sums.shape)
+            # indNonZeros = np.where(sums != 0)
+            # diagonalValues = np.zeros(sums.shape)
 
             degree = 1/np.sqrt(self.graph.sum(axis=1))
             D = sparse.spdiags(degree.T, 0, n, n)
 
-            #diagonalValues[indNonZeros] = 1.0 / np.sqrt(sums[indNonZeros])
-            #D = sparse.spdiags(diagonalValues.T, 0, diagonalValues.shape[0], diagonalValues.shape[0])
-
+            # diagonalValues[indNonZeros] = 1.0 / np.sqrt(sums[indNonZeros])
+            # D = sparse.spdiags(diagonalValues.T, 0,
+            #                    diagonalValues.shape[0],
+            #                    diagonalValues.shape[0])
             # build S
             S = D * self.graph * D
 

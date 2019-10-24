@@ -1,1 +1,2 @@
-__all__ = ['ProgressBar', 'ColourClass', 'Utilities', 'FancyApp', 'Configuration']
+__all__ = ['ProgressBar', 'ColourClass', 'Utilities',
+           'FancyApp', 'Configuration']

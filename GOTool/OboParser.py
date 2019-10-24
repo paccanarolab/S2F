@@ -45,8 +45,8 @@ FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 """
 
-__author__  = "Tamas Nepusz"
-__email__   = "tamas@cs.rhul.ac.uk"
+__author__ = "Tamas Nepusz"
+__email__ = "tamas@cs.rhul.ac.uk"
 __copyright__ = "Copyright (c) 2009, Tamas Nepusz"
 __license__ = "MIT"
 __version__ = "0.1"
@@ -63,7 +63,7 @@ import tokenize
 class ParseError(Exception):
     """Exception thrown when a parsing error occurred"""
 
-    def __init__(self, msg, lineno = 1):
+    def __init__(self, msg, lineno=1):
         Exception.__init__("%s near line %d" % (msg, lineno))
         self.lineno = lineno
 
@@ -93,8 +93,8 @@ class Value(object):
 
     def __repr__(self):
         """Returns a Python representation of this object"""
-        return "%s(%r, %r)" % (self.__class__.__name__, \
-                self.value, self.modifiers)
+        return "%s(%r, %r)" % (self.__class__.__name__,
+                               self.value, self.modifiers)
 
 
 class Stanza(object):
@@ -138,8 +138,8 @@ class Stanza(object):
 
     def __repr__(self):
         """Returns a Python representation of this object"""
-        return "%s(%r, %r)" % (self.__class__.__name__, \
-                self.name, self.tags)
+        return "%s(%r, %r)" % (self.__class__.__name__,
+                               self.name, self.tags)
 
 
 class Parser(object):
@@ -176,14 +176,16 @@ class Parser(object):
         while True:
             self.lineno += 1
             line = self.fp.readline()
-            if not line: break
+            if not line:
+                break
 
             line = line.strip()
             if not line:
                 yield line
                 continue
 
-            if line[0] == '!': continue
+            if line[0] == '!':
+                continue
             if line[-1] == '\\':
                 # This line is continued in the next line
                 lines = [line[:-1]]
@@ -191,7 +193,8 @@ class Parser(object):
                 while not finished:
                     self.lineno += 1
                     line = self.fp.readline()
-                    if line[0] == '!': continue
+                    if line[0] == '!':
+                        continue
                     line = line.strip()
                     if line[-1] == '\\':
                         lines.append(line[:-1])
@@ -216,7 +219,8 @@ class Parser(object):
         and optional modifiers. Returns the tag name and the
         value as a `Value` object."""
         match = self.line_re.match(line)
-        if not match: return False
+        if not match:
+            return False
         tag, value_and_mod = match.group("tag"), match.group("value")
 
         # If the value starts with a quotation mark, we parse it as a
@@ -257,9 +261,11 @@ class Parser(object):
         if self._extra_line and self._extra_line[0] == '[':
             stanza = Stanza(self._extra_line[1:-1])
         for line in self._lines():
-            if not line: continue
+            if not line:
+                continue
             if line[0] == '[':
-                if stanza: yield stanza
+                if stanza:
+                    yield stanza
                 stanza = Stanza(line[1:-1])
                 continue
             tag, value = self._parse_line(line)
@@ -285,4 +291,3 @@ def test():
 if __name__ == "__main__":
     import sys
     sys.exit(test())
-

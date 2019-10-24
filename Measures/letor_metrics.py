@@ -34,7 +34,8 @@ def ranking_precision_score(y_true, y_score, k=10):
     y_true = np.take(y_true, order[:k])
     n_relevant = np.sum(y_true == pos_label)
 
-    # Divide by min(n_pos, k) such that the best achievable score is always 1.0.
+    # Divide by min(n_pos, k) such that the best
+    # achievable score is always 1.0.
     return float(n_relevant) / min(n_pos, k)
 
 
@@ -68,12 +69,12 @@ def average_precision_score(y_true, y_score, k=10):
     y_true = np.asarray(y_true)[order]
 
     score = 0
-    for i in xrange(len(y_true)):
+    for i in range(len(y_true)):
         if y_true[i] == pos_label:
             # Compute precision up to document i
             # i.e, percentage of relevant documents up to document i.
             prec = 0
-            for j in xrange(0, i + 1):
+            for j in range(0, i + 1):
                 if y_true[j] == pos_label:
                     prec += 1.0
             prec /= (i + 1.0)
@@ -211,8 +212,10 @@ if __name__ == '__main__':
     assert dcg_score([5, 3, 2], [2, 1, 0]) > dcg_score([4, 3, 2], [2, 1, 0])
     assert dcg_score([4, 3, 2], [2, 1, 0]) > dcg_score([1, 3, 2], [2, 1, 0])
 
-    assert dcg_score([5, 3, 2], [2, 1, 0], k=2) > dcg_score([4, 3, 2], [2, 1, 0], k=2)
-    assert dcg_score([4, 3, 2], [2, 1, 0], k=2) > dcg_score([1, 3, 2], [2, 1, 0], k=2)
+    assert dcg_score([5, 3, 2], [2, 1, 0], k=2) > dcg_score([4, 3, 2],
+                                                            [2, 1, 0], k=2)
+    assert dcg_score([4, 3, 2], [2, 1, 0], k=2) > dcg_score([1, 3, 2],
+                                                            [2, 1, 0], k=2)
 
     # Perfect rankings
     assert ndcg_score([5, 3, 2], [2, 1, 0]) == 1.0
@@ -226,27 +229,37 @@ if __name__ == '__main__':
     # Check that sample order is irrelevant
     assert dcg_score([5, 3, 2], [2, 1, 0]) == dcg_score([2, 3, 5], [0, 1, 2])
 
-    assert dcg_score([5, 3, 2], [2, 1, 0], k=2) == dcg_score([2, 3, 5], [0, 1, 2], k=2)
+    assert dcg_score([5, 3, 2], [2, 1, 0], k=2) == dcg_score([2, 3, 5],
+                                                             [0, 1, 2], k=2)
 
     # Check equivalence between two interfaces.
-    assert dcg_score([5, 3, 2], [2, 1, 0]) == dcg_from_ranking([5, 3, 2], [0, 1, 2])
-    assert dcg_score([1, 3, 2], [2, 1, 0]) == dcg_from_ranking([1, 3, 2], [0, 1, 2])
-    assert dcg_score([1, 3, 2], [0, 2, 1]) == dcg_from_ranking([1, 3, 2], [1, 2, 0])
-    assert ndcg_score([1, 3, 2], [2, 1, 0]) == ndcg_from_ranking([1, 3, 2], [0, 1, 2])
+    assert dcg_score([5, 3, 2], [2, 1, 0]) == dcg_from_ranking([5, 3, 2],
+                                                               [0, 1, 2])
+    assert dcg_score([1, 3, 2], [2, 1, 0]) == dcg_from_ranking([1, 3, 2],
+                                                               [0, 1, 2])
+    assert dcg_score([1, 3, 2], [0, 2, 1]) == dcg_from_ranking([1, 3, 2],
+                                                               [1, 2, 0])
+    assert ndcg_score([1, 3, 2], [2, 1, 0]) == ndcg_from_ranking([1, 3, 2],
+                                                                 [0, 1, 2])
 
-    assert dcg_score([5, 3, 2], [2, 1, 0], k=2) == dcg_from_ranking([5, 3, 2], [0, 1])
-    assert dcg_score([1, 3, 2], [2, 1, 0], k=2) == dcg_from_ranking([1, 3, 2], [0, 1])
-    assert dcg_score([1, 3, 2], [0, 2, 1], k=2) == dcg_from_ranking([1, 3, 2], [1, 2])
+    assert dcg_score([5, 3, 2], [2, 1, 0], k=2) == dcg_from_ranking([5, 3, 2],
+                                                                    [0, 1])
+    assert dcg_score([1, 3, 2], [2, 1, 0], k=2) == dcg_from_ranking([1, 3, 2],
+                                                                    [0, 1])
+    assert dcg_score([1, 3, 2], [0, 2, 1], k=2) == dcg_from_ranking([1, 3, 2],
+                                                                    [1, 2])
     assert ndcg_score([1, 3, 2], [2, 1, 0], k=2) == \
-            ndcg_from_ranking([1, 3, 2], [0, 1])
+        ndcg_from_ranking([1, 3, 2], [0, 1])
 
     # Precision
     assert ranking_precision_score([1, 1, 0], [3, 2, 1], k=2) == 1.0
     assert ranking_precision_score([1, 1, 0], [1, 0, 0.5], k=2) == 0.5
     assert ranking_precision_score([1, 1, 0], [3, 2, 1], k=3) == \
-            ranking_precision_score([1, 1, 0], [1, 0, 0.5], k=3)
+        ranking_precision_score([1, 1, 0], [1, 0, 0.5], k=3)
 
     # Average precision
     from sklearn.metrics import average_precision_score as ap
-    assert average_precision_score([1, 1, 0], [3, 2, 1]) == ap([1, 1, 0], [3, 2, 1])
-    assert average_precision_score([1, 1, 0], [3, 1, 0]) == ap([1, 1, 0], [3, 1, 0])
+    assert average_precision_score([1, 1, 0], [3, 2, 1]) == ap([1, 1, 0],
+                                                               [3, 2, 1])
+    assert average_precision_score([1, 1, 0], [3, 1, 0]) == ap([1, 1, 0],
+                                                               [3, 1, 0])

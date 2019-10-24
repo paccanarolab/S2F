@@ -33,10 +33,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 """
 
 
-import pandas as pd
-import numpy as np
-from Utils import *
 from collections import defaultdict
+
+import numpy as np
+import pandas as pd
+
+from Utils import ColourClass, FancyApp, ProgressBar
+
 if __name__ == '__main__':
     import OboParser
     import AnnotationParser
@@ -69,8 +72,11 @@ class GOTerm(object):
     def information_content(self, organism_name):
         if organism_name not in self.ic:
             annotations_df = self.ontology.get_annotations(organism_name)
-            if len(self.annotations[organism_name]) > 0:
-                self.ic[organism_name] = -np.log(len(self.annotations[organism_name])/annotations_df.shape[0])/np.log(2)
+            len_annotations = len(self.annotations[organism_name])
+            if len_annotations > 0:
+                self.ic[organism_name] = -np.log(len_annotations /
+                                                 annotations_df.shape[0]) /\
+                                         np.log(2)
             else:
                 self.ic[organism_name] = 0
         return self.ic[organism_name]
@@ -80,7 +86,9 @@ class GOTerm(object):
             self.relations[relation_type].add(go_term)
             go_term.relations['a_'+relation_type].add(self)
 
-    def up_propagate_annotations(self, organism_name, relations=VALID_RELATIONS, same_domain=True):
+    def up_propagate_annotations(self, organism_name,
+                                 relations=VALID_RELATIONS,
+                                 same_domain=True):
         """
         Recursively up-propagates the annotations until the root term
 
@@ -93,17 +101,23 @@ class GOTerm(object):
             (defaults to ['is_a', 'part_of']).
             All relations are assumed to be transitive
         same_domain : bool, optional
-            If True, the up-propagation is constrained to terms belonging to the same domain
+            If True, the up-propagation is constrained to terms belonging
+            to the same domain
         """
         for relation in relations:
             for term in self.relations[relation]:
-                if (same_domain and term.domain == self.domain) or not same_domain:
-                    for protein, score in self.annotations[organism_name].items():
-                        if protein in term.annotations[organism_name].keys():
-                            term.annotations[organism_name][protein] = max(term.annotations[organism_name][protein], score)
+                if (same_domain and term.domain == self.domain) or\
+                        not same_domain:
+                    for prot, score in self.annotations[organism_name].items():
+                        if prot in term.annotations[organism_name].keys():
+                            term.annotations[organism_name][prot] = max(
+                                term.annotations[organism_name][prot],
+                                score)
                         else:
-                            term.annotations[organism_name][protein] = score
-                    term.up_propagate_annotations(organism_name, relations=relations, same_domain=same_domain)
+                            term.annotations[organism_name][prot] = score
+                    term.up_propagate_annotations(organism_name,
+                                                  relations=relations,
+                                                  same_domain=same_domain)
 
     def get_parents(self, relations=VALID_RELATIONS):
         parents = set()
@@ -122,7 +136,8 @@ class GOTerm(object):
 
 class GeneOntology(FancyApp.FancyApp):
 
-    EXPERIMENTAL_EVIDENCE_CODES = ['EXP', 'IDA', 'IPI', 'IMP', 'IGI', 'IEP', 'TAS', 'IC']
+    EXPERIMENTAL_EVIDENCE_CODES = ['EXP', 'IDA', 'IPI', 'IMP',
+                                   'IGI', 'IEP', 'TAS', 'IC']
     ALL_EVIDENCE_CODES = [
         # experimental
         'EXP', 'IDA', 'IPI', 'IMP', 'IGI', 'IEP',
@@ -130,14 +145,16 @@ class GeneOntology(FancyApp.FancyApp):
         'HTP', 'HDA', 'HMP', 'HGI', 'HEP',
         # Computational Analysis
         'ISS', 'ISO', 'ISA', 'ISM', 'IGC', 'IBA', 'IBD', 'IKR', 'IRD', 'RCA'
-        # Author statement 
+        # Author statement
         'TAS', 'NAS',
         # Curator statement
         'IC', 'ND',
         # Electronic Annotation
         'IEA'
     ]
-    DOMAINS = ['biological_process', 'cellular_component', 'molecular_function']
+    DOMAINS = ['biological_process',
+               'cellular_component',
+               'molecular_function']
     RELATIONS = ['is_a', 'part_of']
 
     def __init__(self, obo, verbose=False):
@@ -152,7 +169,8 @@ class GeneOntology(FancyApp.FancyApp):
 
     def find_term(self, go_id):
         """
-        If the go_id is in the structure, return the term, otherwise, find by alias
+        If the go_id is in the structure, return the term, otherwise,
+        find by alias
         :param go_id:
         :return: GOTerm instance
         """
@@ -163,7 +181,8 @@ class GeneOntology(FancyApp.FancyApp):
 
     def build_structure(self):
         """
-        Builds the structure of the Gene Ontology in memory based on the provided obo file.
+        Builds the structure of the Gene Ontology in memory
+        based on the provided obo file.
         :return: None
         """
         parser = OboParser.Parser(self.obo)
@@ -198,12 +217,15 @@ class GeneOntology(FancyApp.FancyApp):
 
         self.tell('Building Structure')
         if self.__verbose__:
-            prog = ProgressBar.ProgressBar(0, len(stanzas), 77, mode='dynamic', char='-')
+            prog = ProgressBar.ProgressBar(0, len(stanzas), 77, mode='dynamic',
+                                           char='-')
         for stanza in stanzas:
             go_id = stanza.tags['id'][0].value
             if 'is_a' in stanza.tags:
                 for related_go_id in stanza.tags['is_a']:
-                    self.find_term(go_id).add_relation(self.find_term(related_go_id.value), 'is_a')
+                    self.find_term(go_id)\
+                        .add_relation(self.find_term(related_go_id.value),
+                                      'is_a')
 
             if 'relationship' in stanza.tags:
                 for relationship in stanza.tags['relationship']:
@@ -211,7 +233,9 @@ class GeneOntology(FancyApp.FancyApp):
                         self.warning('modifiers is not None')
                     split_relation = relationship.value.split()
                     if split_relation[0] == 'part_of':
-                        self.find_term(go_id).add_relation(self.find_term(split_relation[1]), 'part_of')
+                        self.find_term(go_id)\
+                            .add_relation(self.find_term(split_relation[1]),
+                                          'part_of')
             if self.__verbose__:
                 prog.increment_amount()
                 prog.print_bar()
@@ -220,19 +244,24 @@ class GeneOntology(FancyApp.FancyApp):
 
     def load_annotation_file(self, annotation_file, organism_name,
                              evidence_codes=EXPERIMENTAL_EVIDENCE_CODES,
-                             domains=DOMAINS, blacklist=None, annotate_obsolete=False):
+                             domains=DOMAINS, blacklist=None,
+                             annotate_obsolete=False):
         """
         Loads a GOA annotation file into the structure.
         :param annotation_file: path to the GOA file
-        :param organism_name: the name that keeps these annotations separated from other annotations in the structure
-        :param evidence_codes: a list of valid evidence codes, only anntoations with evidence codes in the list will be
+        :param organism_name: the name that keeps these annotations
+                              separated from other annotations in the structure
+        :param evidence_codes: a list of valid evidence codes, only
+                               anntoations with evidence codes in the list
+                               will be
             added to the structure. Defaults to:
 
         :param domains:
         :param blacklist
         :return:
         """
-        parser = AnnotationParser.AnnotationFile(annotation_file, organism_name)
+        parser = AnnotationParser.AnnotationFile(annotation_file,
+                                                 organism_name)
         counter = 0
         self.tell('Annotating ' + organism_name)
         for annotation in parser:
@@ -249,20 +278,24 @@ class GeneOntology(FancyApp.FancyApp):
                         if len(annotation.qualifiers) > 0:
                             if annotation.qualifiers[0] != 'NOT':
                                 if annotate_obsolete or not term.is_obsolete:
-                                    term.annotations[organism_name][annotation.db_object_id] = 1
+                                    term.annotations[organism_name][
+                                        annotation.db_object_id] = 1
                             else:
                                 counter += 1
                         else:
                             if annotate_obsolete or not term.is_obsolete:
-                                term.annotations[organism_name][annotation.db_object_id] = 1
+                                term.annotations[organism_name][
+                                    annotation.db_object_id] = 1
                     else:
                         counter += 1
                 except KeyError:
                     counter += 1
 
-        self.warning('A total of ' + str(counter) + ' annotations were skipped')
+        self.warning('A total of ' + str(counter) +
+                     ' annotations were skipped')
 
-    def load_annotations(self, annotations, organism_name, annotate_obsoletes=False):
+    def load_annotations(self, annotations, organism_name,
+                         annotate_obsoletes=False):
         """
         Load annotations from a compatible pandas DataFrame
 
@@ -271,15 +304,16 @@ class GeneOntology(FancyApp.FancyApp):
         annotations : pandas DataFrame
             with the columns 'GO ID', 'Protein' and 'Score'
         organism_name : str
-            the name of the organism in which to load the annotations, if the organism exists,
-            annotations will be overwritten
+            the name of the organism in which to load the annotations,
+            if the organism exists, annotations will be overwritten
         annotate_obsoletes : bool, optional
-            if True, obsolete terms will be considered in the annotation (the default is False)
+            if True, obsolete terms will be considered in the annotation
+            (the default is False)
 
         Notes
         -----
-        The expected DataFrame should contain only one score per pair, otherwise the latest score
-        will be kept.
+        The expected DataFrame should contain only one score per pair,
+        otherwise the latest score will be kept.
         """
         for i, a in annotations.iterrows():
             term = self.find_term(a['GO ID'])
@@ -322,36 +356,54 @@ class GeneOntology(FancyApp.FancyApp):
 if __name__ == '__main__':
     go = GeneOntology('example data/go.obo', verbose=True)
     go.build_structure()
-    go.load_annotation_file('example data/36.P_aeruginosa_LMG_12228.goa', 'Pseudomonas aeruginosa')
+    go.load_annotation_file('example data/36.P_aeruginosa_LMG_12228.goa',
+                            'Pseudomonas aeruginosa')
 
-    annotated_terms = [t for t in go.terms.values() if 'Pseudomonas aeruginosa' in t.annotations.keys()]
+    annotated_terms = [t for t in go.terms.values() if 'Pseudomonas aeruginosa'
+                       in t.annotations.keys()]
     go.tell('annotated terms: ', len(annotated_terms))
-    go.tell('number of annotations: ', sum([len(t.annotations['Pseudomonas aeruginosa']) for t in annotated_terms]))
+    go.tell('number of annotations: ',
+            sum([len(t.annotations['Pseudomonas aeruginosa'])
+                 for t in annotated_terms]))
 
-    go.dump_annotations('Pseudomonas aeruginosa', 'example data/pseudomonas.exp')
+    go.dump_annotations('Pseudomonas aeruginosa',
+                        'example data/pseudomonas.exp')
     go.up_propagate_annotations('Pseudomonas aeruginosa')
-    go.dump_annotations('Pseudomonas aeruginosa', 'example data/pseudomonas_uppropagated.exp')
+    go.dump_annotations('Pseudomonas aeruginosa',
+                        'example data/pseudomonas_uppropagated.exp')
 
-    annotated_terms = [t for t in go.terms.values() if 'Pseudomonas aeruginosa' in t.annotations.keys()]
-    go.tell('number of annotations: ', sum([len(t.annotations['Pseudomonas aeruginosa']) for t in annotated_terms]))
+    annotated_terms = [t for t in go.terms.values()
+                       if 'Pseudomonas aeruginosa'
+                       in t.annotations.keys()]
+    go.tell('number of annotations: ',
+            sum([len(t.annotations['Pseudomonas aeruginosa'])
+                 for t in annotated_terms]))
 
     annotated_genes = set()
-    terms_by_domain = {'biological_process': set(), 'cellular_component': set(), 'molecular_function': set()}
+    terms_by_domain = {'biological_process': set(),
+                       'cellular_component': set(),
+                       'molecular_function': set()}
     for t in annotated_terms:
         annotated_genes |= set(t.annotations['Pseudomonas aeruginosa'].keys())
         terms_by_domain[t.domain].add(t)
     go.tell('number of annotated genes: ', len(annotated_genes))
 
     # terms annotated with 3 genes or more
-    popular_terms = [t for t in annotated_terms if len(t.annotations['Pseudomonas aeruginosa'].keys()) >= 3]
+    popular_terms = [t for t in annotated_terms
+                     if len(t.annotations['Pseudomonas aeruginosa'].keys())
+                     >= 3]
     # genes annotated to those terms
     popular_genes = set()
-    popular_by_domain = {'biological_process': set(), 'cellular_component': set(), 'molecular_function': set()}
-    popular_terms_by_domain = {'biological_process': set(), 'cellular_component': set(),
+    popular_by_domain = {'biological_process': set(),
+                         'cellular_component': set(),
+                         'molecular_function': set()}
+    popular_terms_by_domain = {'biological_process': set(),
+                               'cellular_component': set(),
                                'molecular_function': set()}
     for t in popular_terms:
         popular_genes |= set(t.annotations['Pseudomonas aeruginosa'].keys())
-        popular_by_domain[t.domain] |= set(t.annotations['Pseudomonas aeruginosa'].keys())
+        popular_by_domain[t.domain] |= set(
+            t.annotations['Pseudomonas aeruginosa'].keys())
         popular_terms_by_domain[t.domain].add(t)
     go.tell('popular genes', len(popular_genes))
     go.tell('annotated terms: ', len(annotated_terms))
