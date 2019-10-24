@@ -2,6 +2,8 @@ import sys
 
 import numpy as np
 import pandas as pd
+import scipy
+import subprocess
 
 
 def all_indices(value, qlist):
@@ -114,3 +116,11 @@ def extract_indices_from_fasta(fasta, processing_func=keep_entire_prot_id):
     proteins_df.columns = ['protein idx', 'protein id']
     proteins_df.set_index('protein id', inplace=True)
     return proteins_df
+
+def wccount(filename):
+    # taken from https://gist.github.com/zed/0ac760859e614cd03652#file-gistfile1-py-L41
+    out = subprocess.Popen(['wc', '-l', filename], 
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT).communicate()[0]
+    return int(out.partition(b' ')[0])
+
