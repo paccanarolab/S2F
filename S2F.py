@@ -273,7 +273,7 @@ if __name__ == '__main__':
                     'installation using the `Install` command',
         help='build-clamp command'
     )
-
+    build_goa_clamp.set_defaults(func=commands.build_clamp)
     build_goa_clamp.add_argument('--evidence-codes',
                                  help='manually provide a list of evidence codes that will be used to filter the '
                                       'UniProt GOA. If not provided, S2F will use experimental evidence codes.',
