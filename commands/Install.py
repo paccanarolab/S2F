@@ -353,7 +353,7 @@ class Install(FancyApp.FancyApp):
                   self.uniprot_goa.split('.gz')[0] + " > " + experimental_goa
         subprocess.call(command, shell=True)
 
-        num_lines = Utilities.wccount(experimental_goa)
+        num_lines = Utilities.line_count(experimental_goa)
         # keep only SwissProt annotations
         self.filtered_goa = os.path.join(self.installation_directory,
                                          'data/UniprotKB/filtered_goa')

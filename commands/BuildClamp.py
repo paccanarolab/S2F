@@ -30,12 +30,12 @@ class BuildClamp(FancyApp.FancyApp):
             self.evidence_codes = GeneOntology.GeneOntology.EXPERIMENTAL_EVIDENCE_CODES
         self.tell('Filtering GOA file')
         out = open(self.output, 'w')
-        num_lines = Utilities.wccount(uniprot_goa)
+        num_lines = Utilities.line_count(uniprot_goa)
         if self.__verbose__:
             prog = ProgressBar.ProgressBar(0, num_lines, 77, mode='dynamic', char='-')
         for line in open(uniprot_goa):
             fields = line.split()
-            if fields[1] in self.proteins and fields[6] in self.evidence_codes:
+            if fields[1] in self.proteins.index and fields[6] in self.evidence_codes:
                 out.write(line)
             if self.__verbose__:
                 prog.increment_amount()

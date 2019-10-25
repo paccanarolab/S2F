@@ -4,6 +4,9 @@ test.*
 Playground.py
 WINPlayground.py
 
+# Ignore particular configuration files
+s2f.win.conf
+
 # Jupyter notebooks local data
 .ipynb_checkpoints
 
