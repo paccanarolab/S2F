@@ -1,12 +1,13 @@
 def coloured_string(colour, string):
     return colour + string + bcolors.ENDC
 
+
 class bcolors:
     HEADER = '\033[95m'
     OKBLUE = '\033[94m'
     OKGREEN = '\033[92m'
     FAIL = '\033[1;31;40m'
-    #WARNING = '\033[5;33;40m'
+    # WARNING = '\033[5;33;40m'
     WARNING = '\033[1;31m'
     ENDC = '\033[0m'
     RESET = "\033[m"
@@ -29,7 +30,7 @@ class bcolors:
     BG_BLUE = "\033[44m"
     BG_MAGENTA = "\033[45m"
     BG_CYAN = "\033[46m"
-    
+
     def disable(self):
         self.HEADER = ''
         self.OKBLUE = ''
@@ -47,9 +48,10 @@ if __name__ == '__main__':
 #        if i%10 == 0:
 #            line += '\n'
     line = ''
-    for a, b, c in product(range(256),repeat=3):
+    for a, b, c in product(range(256), repeat=3):
 
-        line += '\033[' + str(a) + ';' + str(b) + ';' + str(c) + 'm' + str(a) + ';' + str(b) + ';' + str(c) + bcolors.ENDC + '\t'
-        if c%10 == 0:
+        line += '\033[' + str(a) + ';' + str(b) + ';' + str(c) + 'm' +\
+                str(a) + ';' + str(b) + ';' + str(c) + bcolors.ENDC + '\t'
+        if c % 10 == 0:
             line += '\n'
     print(line)

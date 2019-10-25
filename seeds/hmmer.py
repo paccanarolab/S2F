@@ -1,10 +1,11 @@
-from Utils import *
-from seeds import Seed
+import os
+
+import numpy as np
+import pandas as pd
 from scipy import sparse
 
-import pandas as pd
-import numpy as np
-import os
+from seeds import Seed
+from Utils import ColourClass
 
 
 class HMMerSeed(Seed):
@@ -24,9 +25,11 @@ class HMMerSeed(Seed):
     def get_seed(self, **kwargs):
         if 'seed_threshhold' in kwargs:
             self.seed_threshhold = kwargs['seed_threshhold']
-        return_pandas_assignment = kwargs.get('return_pandas_assignment', False)
+        return_pandas_assignment = kwargs.get('return_pandas_assignment',
+                                              False)
         assignment = {'GO ID': [], 'Protein': [], 'Score': []}
-        self.tell('Building HMMer seed file with threshold', self.seed_threshhold)
+        self.tell('Building HMMer seed file with threshold',
+                  self.seed_threshhold)
         for line in open(self.evalue_file, 'r'):
             fields = line.strip().split('\t')
             evalue = float(fields[2])
@@ -46,20 +49,25 @@ class HMMerSeed(Seed):
             return assignment_df
 
         self.tell('Building seed matrix...')
-        assignment_df = assignment_df.merge(self.proteins, left_on='Protein', right_index=True)
-        assignment_df = assignment_df.merge(self.terms, left_on='GO ID', right_index=True)
+        assignment_df = assignment_df.merge(self.proteins, left_on='Protein',
+                                            right_index=True)
+        assignment_df = assignment_df.merge(self.terms, left_on='GO ID',
+                                            right_index=True)
 
         p_idx = assignment_df['protein idx'].values
         go_idx = assignment_df['term idx'].values
 
-        return sparse.coo_matrix((np.ones(len(assignment_df)), (p_idx, go_idx)),
-                                 shape=(len(self.proteins), len(self.terms)))
+        return sparse.coo_matrix((np.ones(len(assignment_df)),
+                                  (p_idx, go_idx)),
+                                 shape=(len(self.proteins),
+                                        len(self.terms)))
 
     def process_output(self, **kwargs):
         self.evalue_file = kwargs.get('evalue_file', self.evalue_file)
         if not os.path.exists(self.evalue_file):
             self.tell('Loading GOA annotations')
-            self.go.load_annotation_file(self.goa, 'GOA', blacklist=self.blacklist)
+            self.go.load_annotation_file(self.goa, 'GOA',
+                                         blacklist=self.blacklist)
             self.tell('Caching GOA annotations')
             goa = self.go.get_annotations('GOA')
             self.evalue_file = open(self.evalue_file, 'w')
@@ -74,10 +82,12 @@ class HMMerSeed(Seed):
 
                 if '|' in target:
                     target = target.split('|')[1]
-
-                if len(goa[goa['Protein'] == target]) > 0:
-                    self.evalue_file.write(query + '\t' + target + '\t' + evalue + '\t')
-                    self.evalue_file.write('\t'.join(goa[goa['Protein'] == target]['GO ID'].unique()))
+                goa_target = goa[goa['Protein'] == target]
+                if len(goa_target) > 0:
+                    self.evalue_file.write(query + '\t' + target +
+                                           '\t' + evalue + '\t')
+                    self.evalue_file.write('\t'.join(
+                        goa_target['GO ID'].unique()))
                     self.evalue_file.write('\n')
             self.evalue_file.close()
         else:

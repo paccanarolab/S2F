@@ -1,9 +1,9 @@
-from Utils import *
-from seeds import Seed
+import numpy as np
+import pandas as pd
 from scipy import sparse
 
-import pandas as pd
-import numpy as np
+from seeds import Seed
+from Utils import ColourClass
 
 
 class InterProSeed(Seed):
@@ -41,11 +41,14 @@ class InterProSeed(Seed):
                                 methods[method]['Score'].append(1)
                             else:
                                 self.methods.append(method)
-                                methods[method] = {'GO ID': [t], 'Protein': [prot], 'Score': [1]}
+                                methods[method] = {'GO ID': [t],
+                                                   'Protein': [prot],
+                                                   'Score': [1]}
 
         self.methods.sort()
         methods_df = {}
-        self.all_methods = sparse.csr_matrix((len(self.proteins), len(self.terms)))
+        self.all_methods = sparse.csr_matrix((len(self.proteins),
+                                              len(self.terms)))
         self.tell('Annotating and up propagating')
         for e, m in enumerate(self.methods):
             methods_df[m] = pd.DataFrame(methods[m])
@@ -53,15 +56,18 @@ class InterProSeed(Seed):
             self.go.up_propagate_annotations(m)
             methods_df[m] = self.go.get_annotations(m)
 
-            methods_df[m] = methods_df[m].merge(self.proteins, left_on='Protein', right_index=True)
-            methods_df[m] = methods_df[m].merge(self.terms, left_on='GO ID', right_index=True)
+            methods_df[m] = methods_df[m].merge(self.proteins,
+                                                left_on='Protein',
+                                                right_index=True)
+            methods_df[m] = methods_df[m].merge(self.terms, left_on='GO ID',
+                                                right_index=True)
 
             p_idx = methods_df[m]['protein idx'].values
             go_idx = methods_df[m]['term idx'].values
 
-            self.all_methods += sparse.coo_matrix((np.ones(len(methods_df[m])), (p_idx, go_idx)),
-                                                  shape=(len(self.proteins), len(self.terms)))
+            self.all_methods += sparse.coo_matrix((np.ones(len(methods_df[m])),
+                                                   (p_idx, go_idx)),
+                                                  shape=(len(self.proteins),
+                                                         len(self.terms)))
 
         return methods_df
-
-

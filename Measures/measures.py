@@ -1,9 +1,11 @@
 import abc
+
 import numpy as np
 import pandas as pd
 import sklearn.metrics
+
 from Measures.letor_metrics import ndcg_score
-from Utils import *
+from Utils import FancyApp
 
 
 class S2FMeasure(FancyApp.FancyApp):
@@ -13,21 +15,21 @@ class S2FMeasure(FancyApp.FancyApp):
     @abc.abstractmethod
     def compute_per_gene(self, real):
         """
-        given a matrix with the label samples 
+        given a matrix with the label samples
         returns the measure result doing it using the 'per gene' mode
         """
 
     @abc.abstractmethod
     def compute_per_term(self, real):
         """
-        given a matrix with the label samples 
+        given a matrix with the label samples
         returns the measure result doing it using the 'per term' mode
         """
 
     @abc.abstractmethod
     def compute_overall(self, real):
         """
-        given a matrix with the label samples 
+        given a matrix with the label samples
         returns the measure result doing it using the 'overall' mode
         """
 
@@ -37,8 +39,7 @@ class S2FMeasure(FancyApp.FancyApp):
         Establishes all the necessary parameters for the measure
         that are defined in showParameters.
         '''
- 
-    
+
     @abc.abstractmethod
     def showParameters(self):
         """
@@ -48,7 +49,8 @@ class S2FMeasure(FancyApp.FancyApp):
 
 class HX_py(S2FMeasure):
 
-    def __init__(self, prediction, information_content, organism_id, verbose = True):
+    def __init__(self, prediction, information_content,
+                 organism_id, verbose=True):
         super(HX_py, self).__init__()
         self.prediction = prediction
         self.information_content = information_content
@@ -71,13 +73,16 @@ class HX_py(S2FMeasure):
                 self.prediction[row, :],
                 gold_standard[row, :]
             )
-            th_list, idx = np.unique(self.prediction[row, :], return_index=True)
-            s = self.compute_s_measure(self.prediction[row, :], gold_standard[row, :], th_list)
+            th_list, idx = np.unique(self.prediction[row, :],
+                                     return_index=True)
+            s = self.compute_s_measure(self.prediction[row, :],
+                                       gold_standard[row, :], th_list)
             genewise.append({**hx, **s})
         # rename all the keys
         keys = genewise[0].keys()
         result = {}
-        valid_keys = [k for k in keys if k not in ['s', 'ru', 'mi', 'roc', 'pr']]
+        valid_keys = [k for k in keys if k not in
+                      ['s', 'ru', 'mi', 'roc', 'pr']]
         for k in valid_keys:
             result[k+' per-gene'] = np.mean([g[k] for g in genewise])
             result[k+' per-gene raw'] = np.array([g[k] for g in genewise])
@@ -90,21 +95,25 @@ class HX_py(S2FMeasure):
         """
         if gold_standard.shape[1] < 1:
             return {}
-        # we iterate all the columns and compute the mean of the column-wise scores
+        # we iterate all the columns and compute the mean
+        # of the column-wise scores
         termwise = []
         for col in range(gold_standard.shape[1]):
             hx = HX_py.HX_iteration(
                 self.prediction[:, col],
                 gold_standard[:, col]
             )
-            th_list, idx = np.unique(self.prediction[:, col], return_index=True)
+            th_list, idx = np.unique(self.prediction[:, col],
+                                     return_index=True)
             s = self.compute_s_measure(
-                self.prediction[:, col], gold_standard[:, col], th_list, ic=self.information_content[col])
+                self.prediction[:, col], gold_standard[:, col], th_list,
+                ic=self.information_content[col])
             termwise.append({**hx, **s})
         # rename all the keys
         keys = termwise[0].keys()
         result = {}
-        valid_keys = [k for k in keys if k not in ['s', 'ru', 'mi', 'roc', 'pr']]
+        valid_keys = [k for k in keys if k not in
+                      ['s', 'ru', 'mi', 'roc', 'pr']]
         for k in valid_keys:
             result[k + ' per-term'] = np.mean([g[k] for g in termwise])
             result[k + ' per-term raw'] = np.array([g[k] for g in termwise])
@@ -125,7 +134,7 @@ class HX_py(S2FMeasure):
         return {**hx, **s}
 
     def compute_s_measure(self, pred, gs, ths, ic='infer'):
-        masked = gs * pred
+        # masked = gs * pred
         ru = []
         mi = []
         s = []
@@ -134,7 +143,7 @@ class HX_py(S2FMeasure):
             false_negatives = ((pred < th) & (gs > 0)).astype(np.float)
             false_positives = ((pred >= th) & (gs < 1)).astype(np.float)
             if type(ic) == str and ic == 'infer':
-                #TODO: update this to positive
+                # TODO: update this to positive
                 ic = -self.information_content
             ru.append(np.sum(false_negatives * ic)/gs.shape[0])
             mi.append(np.sum(false_positives * ic)/gs.shape[0])
@@ -172,7 +181,8 @@ class HX_py(S2FMeasure):
         if qty_pos * qty_neg == 0 or n_steps < 2:
             auc = 0.5
             pre_at = 0
-            f1 = 2 / (1 + len(dat[:, 1]) / (qty_pos + np.finfo(np.double).tiny))
+            # f1 = 2 / (1 + len(dat[:, 1]) /
+            #           (qty_pos + np.finfo(np.double).tiny))
             ndcg = 0
             jac = 0
             if qty_pos == 0:
@@ -183,7 +193,8 @@ class HX_py(S2FMeasure):
                 jac = qty_pos / len(dat[:, 1])
             return {
                 'AUC': auc,
-                'AUPR': qty_pos / N, # based on https://stats.stackexchange.com/a/266989/227894
+                # based on https://stats.stackexchange.com/a/266989/227894
+                'AUPR': qty_pos / N,
                 'Precision at 0.2 Recall': pre_at,
                 'F_max': 0,
                 'NDCG': ndcg,
@@ -192,9 +203,11 @@ class HX_py(S2FMeasure):
                 'pr': [np.array([0, 1]), np.array([qty_pos / N, qty_pos / N])],
             }
 
-        FP, TP, TH = sklearn.metrics.ranking._binary_clf_curve(dat[:, 1], dat[:, 0], pos_label=1.0)
+        FP, TP, TH = sklearn.metrics.ranking._binary_clf_curve(dat[:, 1],
+                                                               dat[:, 0],
+                                                               pos_label=1.0)
 
-        TN = qty_neg - FP
+        # TN = qty_neg - FP
         FN = qty_pos - TP
 
         FPR = FP / qty_neg
@@ -203,7 +216,8 @@ class HX_py(S2FMeasure):
         rec = TP / (TP + FN)
         pre = TP / (TP + FP)
 
-        f_max = np.max(2.0 * (np.multiply(pre, rec)) / (pre + rec + np.finfo(np.double).tiny))
+        f_max = np.max(2.0 * (np.multiply(pre, rec)) /
+                             (pre + rec + np.finfo(np.double).tiny))
 
         auc = sklearn.metrics.auc(FPR, TPR)
         aupr = sklearn.metrics.auc(rec, pre)
@@ -250,27 +264,25 @@ class HX_py(S2FMeasure):
 
     def showParameters(self):
         """
-        prediction: numpy array that contains the predictions made by the PFP method
-            This code assumes that the shape of the matrix has the genes in the rows
-            and the terms in the columns
-        evidence_codes: to filter the GOA by evidence codes, this is the list of 
-            evidence codes to be considered as true
+        prediction: numpy array that contains the predictions made by the
+            PFP method This code assumes that the shape of the matrix has
+            the genes in the rows and the terms in the columns
+        evidence_codes: to filter the GOA by evidence codes, this is the
+            list of evidence codes to be considered as true
         """
         return ['prediction', 'evidence_codes']
 
 
 def log(api, message):
     try:
-        api.send_direct_message(screen_name='torresmateo',text=message)
-    except:
+        api.send_direct_message(screen_name='torresmateo', text=message)
+    except Exception:
         print('could not tweet')
     print(message)
 
 
 if __name__ == '__main__':
 
-    import numpy as np
-    import pandas as pd
     import seaborn as sns
     import matplotlib.pyplot as plt
     from Utils.notification import load_configuration, get_api
@@ -298,35 +310,47 @@ if __name__ == '__main__':
 
         log(api, '[S2F] generating plot information for organism ' + org)
         goa_values = np.load('matrices/' + org + '_goa_values.npy')
-        hmmer_diff_values = np.load('matrices/' + org + '_hmmer_diff_values.npy')
+        hmmer_diff_values = np.load('matrices/' + org +
+                                    '_hmmer_diff_values.npy')
         hmmer_values = np.load('matrices/' + org + '_hmmer_values.npy')
-        interpro_diff_values = np.load('matrices/' + org + '_interpro_diff_values.npy')
+        interpro_diff_values = np.load('matrices/' + org +
+                                       '_interpro_diff_values.npy')
         interpro_values = np.load('matrices/' + org + '_interpro_values.npy')
         s2f_values = np.load('matrices/' + org + '_s2f_values.npy')
 
-        group_name=['3-10', '11-30','31-100', '101-300', '1-300']
+        group_name = ['3-10', '11-30', '31-100', '101-300', '1-300']
 
         s2f_nodiff = 0.9*interpro_values + 0.1*hmmer_values
-        sumcol= np.sum(goa_values, axis=0)
-        sumrow= np.sum(goa_values, axis=1)
+        sumcol = np.sum(goa_values, axis=0)
+        sumrow = np.sum(goa_values, axis=1)
 
-        ranges = [(3,10), (11,30), (31,100), (101,300), (1,300)]
+        ranges = [(3, 10), (11, 30), (31, 100), (101, 300), (1, 300)]
         predictions = []
         gold_standards = []
         for low, high in ranges:
             pred = {}
-            pred['I'] = interpro_values[sumrow > 3, :][:, (sumcol >= low) & (sumcol <= high)]
-            pred['I+D'] = interpro_diff_values[sumrow > 3, :][:, (sumcol >= low) & (sumcol <= high)]
-            pred['H'] = hmmer_values[sumrow > 3, :][:,(sumcol >= low) & (sumcol <= high)]
-            pred['H+D'] = hmmer_diff_values[sumrow > 3, :][:, (sumcol >= low) & (sumcol <= high)]
-            pred['I+H'] = s2f_nodiff[sumrow > 3, :][:, (sumcol >= low) & (sumcol <= high)]
-            pred['I+H+D'] = s2f_values[sumrow > 3, :][:, (sumcol >= low) & (sumcol <= high)]
+            pred['I'] = interpro_values[sumrow > 3, :][:, (sumcol >= low) &
+                                                       (sumcol <= high)]
+            pred['I+D'] = interpro_diff_values[sumrow > 3, :][:,
+                                                              (sumcol >= low) &
+                                                              (sumcol <= high)]
+            pred['H'] = hmmer_values[sumrow > 3, :][:, (sumcol >= low) &
+                                                       (sumcol <= high)]
+            pred['H+D'] = hmmer_diff_values[sumrow > 3, :][:, (sumcol >= low) &
+                                                              (sumcol <= high)]
+            pred['I+H'] = s2f_nodiff[sumrow > 3, :][:, (sumcol >= low) &
+                                                       (sumcol <= high)]
+            pred['I+H+D'] = s2f_values[sumrow > 3, :][:, (sumcol >= low) &
+                                                         (sumcol <= high)]
             predictions.append(pred)
-            gold_standards.append(goa_values[sumrow > 3, :][:, (sumcol >= low) & (sumcol <= high)])
+            gold_standards.append(goa_values[sumrow > 3, :][:, (sumcol >= low)
+                                                            & (sumcol <= high)]
+                                  )
 
         data = {
-            '1 - AUC Overall':[], '1 - AUC Per Gene':[], '1 - AUC Per Term':[],
-            'F1 Score Overall':[], 'F1 Score Per Gene':[], 'F1 Score Per Term':[],
+            '1 - AUC Overall': [], '1 - AUC Per Gene': [],
+            '1 - AUC Per Term': [], 'F1 Score Overall': [],
+            'F1 Score Per Gene': [], 'F1 Score Per Term': [],
         }
 
         for pred, gs, r in zip(predictions, gold_standards, group_name):
@@ -335,10 +359,10 @@ if __name__ == '__main__':
             meas_i = HX_py(pred['I'], org + '_I_' + r)
             meas_id = HX_py(pred['I+D'], org + '_I+D_' + r)
             meas_h = HX_py(pred['H'], org + '_H_')
-            meas_hd = HX_py(pred['H+D'], org + '_H+D_'+ r)
+            meas_hd = HX_py(pred['H+D'], org + '_H+D_' + r)
             meas_ih = HX_py(pred['I+H'], org + '_I+H_' + r)
             meas_ihd = HX_py(pred['I+H+D'], org + '_I+H+D_' + r)
-            
+
             log(api, org + ' InterPro...' + r)
             res_i = meas_i.compute_overall(gs)
             data['1 - AUC Overall'].append(['I', r, 1 - res_i['auc']])
@@ -358,26 +382,25 @@ if __name__ == '__main__':
             log(api, org + ' InterPro + HMMer...' + r)
             res_ih = meas_ih.compute_overall(gs)
             data['1 - AUC Overall'].append(['I+H', r, 1 - res_ih['auc']])
-            
+
             log(api, org + ' S2F...' + r)
             res_ihd = meas_ihd.compute_overall(gs)
             data['1 - AUC Overall'].append(['I+H+D', r, 1 - res_ihd['auc']])
 
-            plot_data[org+r] = {
-                'I':res_i,
-                'I+D':res_id,
-                'H':res_h,
-                'H+D':res_hd,
-                'I+H':res_ih,
-                'I+H+D':res_ihd
-            } 
-            
+            plot_data[org+r] = {'I': res_i,
+                                'I+D': res_id,
+                                'H': res_h,
+                                'H+D': res_hd,
+                                'I+H': res_ih,
+                                'I+H+D': res_ihd}
+
         print(data)
-        auc_overall = pd.DataFrame(data['1 - AUC Overall'],columns=['method', 'range', 'auc'])
+        auc_overall = pd.DataFrame(data['1 - AUC Overall'],
+                                   columns=['method', 'range', 'auc'])
 
         a4_dims = (11.7, 8.27)
         fig, ax = plt.subplots(figsize=a4_dims)
-        sns.barplot(ax=ax,data=auc_overall, x = 'range',y='auc', hue='method')
+        sns.barplot(ax=ax, data=auc_overall, x='range', y='auc', hue='method')
         ax.set(ylabel='1 - AUC')
         plt.savefig('1-AUC' + org + '.png')
         log(api, '[S2F] organism ' + org + ' done')

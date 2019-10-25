@@ -1,5 +1,6 @@
-from Utils import ColourClass
 import time
+
+from Utils import ColourClass
 
 
 class FancyApp(object):
@@ -14,16 +15,20 @@ class FancyApp(object):
 
     @staticmethod
     def yell(colour, handle, *args, **kwargs):
-        print(colour + '[' + time.strftime('%Y-%m-%d %H:%M:%S') + ' ' + str(handle) + ']: ' +
-              ColourClass.bcolors.ENDC + " ".join(map(str, args)), **kwargs)
+        print(colour + '[' + time.strftime('%Y-%m-%d %H:%M:%S') + ' ' +
+              str(handle) + ']: ' + ColourClass.bcolors.ENDC +
+              " ".join(map(str, args)), **kwargs)
 
     def warning(self, *args, **kwargs):
-        self.tell(ColourClass.bcolors.WARNING + " ".join(map(str, args)) + ColourClass.bcolors.ENDC, **kwargs)
+        self.tell(ColourClass.bcolors.WARNING + " ".join(map(str, args)) +
+                  ColourClass.bcolors.ENDC, **kwargs)
 
     def tell(self, *args, **kwargs):
         if self.__verbose__:
-            print(self.colour + '[' + time.strftime('%Y-%m-%d %H:%M:%S') + ' ' + str(self.__class__.__name__) + ']: ' +
-                  ColourClass.bcolors.ENDC + " ".join(map(str, args)), **kwargs)
+            print(self.colour + '[' + time.strftime('%Y-%m-%d %H:%M:%S') +
+                  ' ' + str(self.__class__.__name__) + ']: ' +
+                  ColourClass.bcolors.ENDC + " ".join(map(str, args)),
+                  **kwargs)
 
 
 if __name__ == '__main__':

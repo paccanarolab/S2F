@@ -1,5 +1,5 @@
 from GOTool import GeneOntology
-from Utils import *
+from Utils import ColourClass, Configuration, FancyApp, Utilities
 from requests_html import HTMLSession
 
 import os
@@ -9,7 +9,6 @@ import sys
 
 
 class Install(FancyApp.FancyApp):
-
     def __init__(self, args):
         super(Install, self).__init__()
         self.colour = ColourClass.bcolors.OKGREEN
@@ -20,20 +19,30 @@ class Install(FancyApp.FancyApp):
             Configuration.load_configuration(self.config_file)
 
             self.installation_directory = os.path.expanduser(
-                Configuration.CONFIG.get('directories', 'installation_directory'))
+                Configuration.CONFIG.get('directories',
+                                         'installation_directory'))
 
             self.interpro = Configuration.CONFIG.get('commands', 'interpro')
             self.hmmer = Configuration.CONFIG.get('commands', 'hmmer')
             self.blastp = Configuration.CONFIG.get('commands', 'blastp')
-            self.makeblastdb = Configuration.CONFIG.get('commands', 'makeblastdb')
+            self.makeblastdb = Configuration.CONFIG.get('commands',
+                                                        'makeblastdb')
 
-            self.string_links = Configuration.CONFIG.get('databases', 'string_links')
-            self.string_sequences = Configuration.CONFIG.get('databases', 'string_sequences')
-            self.string_species = Configuration.CONFIG.get('databases', 'string_species')
-            self.uniprot_sprot = Configuration.CONFIG.get('databases', 'uniprot_sprot')
-            self.uniprot_goa = Configuration.CONFIG.get('databases', 'uniprot_goa')
-            self.filtered_goa = Configuration.CONFIG.get('databases', 'filtered_goa')
-            self.filtered_sprot = Configuration.CONFIG.get('databases', 'filtered_sprot')
+            self.string_links = Configuration.CONFIG.get('databases',
+                                                         'string_links')
+            self.string_sequences = Configuration.CONFIG\
+                                                 .get('databases',
+                                                      'string_sequences')
+            self.string_species = Configuration.CONFIG.get('databases',
+                                                           'string_species')
+            self.uniprot_sprot = Configuration.CONFIG.get('databases',
+                                                          'uniprot_sprot')
+            self.uniprot_goa = Configuration.CONFIG.get('databases',
+                                                        'uniprot_goa')
+            self.filtered_goa = Configuration.CONFIG.get('databases',
+                                                         'filtered_goa')
+            self.filtered_sprot = Configuration.CONFIG.get('databases',
+                                                           'filtered_sprot')
 
             ec = Configuration.CONFIG.get('options', 'evidence_codes')
             self.evidence_codes = ec if ec == 'experimental' else ec.split(',')
@@ -42,7 +51,8 @@ class Install(FancyApp.FancyApp):
             self.tell('Provided arguments will override default ones')
 
             # collect parameters from provided arguments
-            self.installation_directory = os.path.expanduser(args.installation_directory)
+            self.installation_directory = os.path.expanduser(
+                args.installation_directory)
 
             self.interpro = args.interpro
             self.hmmer = args.hmmer
@@ -61,25 +71,35 @@ class Install(FancyApp.FancyApp):
             self.evidence_codes = args.evidence_codes
 
             Configuration.CONFIG.add_section('directories')
-            Configuration.CONFIG.set('directories', 'installation_directory', self.installation_directory)
+            Configuration.CONFIG.set('directories', 'installation_directory',
+                                     self.installation_directory)
 
             Configuration.CONFIG.add_section('commands')
             Configuration.CONFIG.set('commands', 'interpro', self.interpro)
             Configuration.CONFIG.set('commands', 'hmmer', self.hmmer)
             Configuration.CONFIG.set('commands', 'blastp', self.blastp)
-            Configuration.CONFIG.set('commands', 'makeblastdb', self.makeblastdb)
+            Configuration.CONFIG.set('commands', 'makeblastdb',
+                                     self.makeblastdb)
 
             Configuration.CONFIG.add_section('databases')
-            Configuration.CONFIG.set('databases', 'string_links', self.string_links)
-            Configuration.CONFIG.set('databases', 'string_sequences', self.string_sequences)
-            Configuration.CONFIG.set('databases', 'string_species', self.string_species)
-            Configuration.CONFIG.set('databases', 'uniprot_sprot', self.uniprot_sprot)
-            Configuration.CONFIG.set('databases', 'uniprot_goa', self.uniprot_goa)
+            Configuration.CONFIG.set('databases', 'string_links',
+                                     self.string_links)
+            Configuration.CONFIG.set('databases', 'string_sequences',
+                                     self.string_sequences)
+            Configuration.CONFIG.set('databases', 'string_species',
+                                     self.string_species)
+            Configuration.CONFIG.set('databases', 'uniprot_sprot',
+                                     self.uniprot_sprot)
+            Configuration.CONFIG.set('databases', 'uniprot_goa',
+                                     self.uniprot_goa)
 
             Configuration.CONFIG.add_section('options')
             if self.evidence_codes == 'experimental':
-                self.evidence_codes = GeneOntology.GeneOntology.EXPERIMENTAL_EVIDENCE_CODES
-            Configuration.CONFIG.set('options', 'evidence_codes', ','.join(self.evidence_codes))
+                self.evidence_codes = GeneOntology.GeneOntology\
+                                                  .EXPERIMENTAL_EVIDENCE_CODES
+            Configuration.CONFIG.set('options',
+                                     'evidence_codes',
+                                     ','.join(self.evidence_codes))
         self.summary_and_continue()
 
     def run(self):
@@ -111,7 +131,8 @@ class Install(FancyApp.FancyApp):
         self.create_directory('seeds/interpro')
 
     def create_directory(self, directory):
-        target = os.path.expanduser(os.path.join(self.installation_directory, directory))
+        target = os.path.expanduser(os.path.join(self.installation_directory,
+                                                 directory))
         if not os.path.exists(target):
             os.mkdir(target)
 
@@ -130,12 +151,16 @@ class Install(FancyApp.FancyApp):
                     string_url = l
                     break
             if string_url:
-                command = "wget '{url}' -P '{dir}'".format(url=string_url, dir=string_dir)
+                command = "wget '{url}' -P '{dir}'".format(url=string_url,
+                                                           dir=string_dir)
                 subprocess.call(command, shell=True)
-                self.string_links = os.path.join(string_dir, os.path.basename(string_url))
+                self.string_links = os.path.join(string_dir,
+                                                 os.path.basename(string_url))
         else:
-            self.tell('STRING interactions file provided, adding', self.string_links, ' to configuration file')
-        Configuration.CONFIG.set('databases', 'string_links', self.string_links)
+            self.tell('STRING interactions file provided, adding',
+                      self.string_links, ' to configuration file')
+        Configuration.CONFIG.set('databases', 'string_links',
+                                 self.string_links)
 
         if self.string_sequences == 'download':
             self.tell('Downloading STRING sequences database')
@@ -144,12 +169,16 @@ class Install(FancyApp.FancyApp):
                 if 'protein.sequences' in l:
                     string_url = l
                     break
-            command = "wget '{url}' -P '{dir}'".format(url=string_url, dir=string_dir)
+            command = "wget '{url}' -P '{dir}'".format(url=string_url,
+                                                       dir=string_dir)
             subprocess.call(command, shell=True)
-            self.string_sequences = os.path.join(string_dir, os.path.basename(string_url))
+            self.string_sequences = os.path.join(string_dir,
+                                                 os.path.basename(string_url))
         else:
-            self.tell('STRING sequences file provided, adding', self.string_sequences, ' to configuration file')
-        Configuration.CONFIG.set('databases', 'string_sequences', self.string_sequences)
+            self.tell('STRING sequences file provided, adding',
+                      self.string_sequences, ' to configuration file')
+        Configuration.CONFIG.set('databases', 'string_sequences',
+                                 self.string_sequences)
 
         if self.string_species == 'download':
             self.tell('Downloading STRING sequences database')
@@ -158,33 +187,47 @@ class Install(FancyApp.FancyApp):
                 if 'species.v' in l:
                     string_url = l
                     break
-            command = "wget '{url}' -P '{dir}'".format(url=string_url, dir=string_dir)
+            command = "wget '{url}' -P '{dir}'".format(url=string_url,
+                                                       dir=string_dir)
             subprocess.call(command, shell=True)
-            self.string_species = os.path.join(string_dir, os.path.basename(string_url))
+            self.string_species = os.path.join(string_dir,
+                                               os.path.basename(string_url))
         else:
-            self.tell('STRING species file provided, adding', self.string_species, ' to configuration file')
-        Configuration.CONFIG.set('databases', 'string_species', self.string_species)
+            self.tell('STRING species file provided, adding',
+                      self.string_species, ' to configuration file')
+        Configuration.CONFIG.set('databases', 'string_species',
+                                 self.string_species)
 
-        uniprot_dir = os.path.join(self.installation_directory, 'data/UniprotKB')
+        uniprot_dir = os.path.join(self.installation_directory,
+                                   'data/UniprotKB')
         if self.uniprot_sprot == 'download':
             self.tell('Downloading UniProt SwissProt file')
-            uniprot_url = 'ftp://ftp.uniprot.org/pub/databases/uniprot/current_release/knowledgebase/complete/' \
+            uniprot_url = "ftp://ftp.uniprot.org/pub/databases/uniprot/" +\
+                          "current_release/knowledgebase/complete/" +\
                           'uniprot_sprot.fasta.gz'
-            command = "wget '{url}' -P '{dir}'".format(url=uniprot_url, dir=uniprot_dir)
+            command = "wget '{url}' -P '{dir}'".format(url=uniprot_url,
+                                                       dir=uniprot_dir)
             subprocess.call(command, shell=True)
-            self.uniprot_sprot = os.path.join(uniprot_dir, 'uniprot_sprot.fasta.gz')
+            self.uniprot_sprot = os.path.join(uniprot_dir,
+                                              'uniprot_sprot.fasta.gz')
         else:
-            self.tell('UniProt SwissProt file provided, adding', self.uniprot_sprot, ' to configuration file')
-        Configuration.CONFIG.set('databases', 'uniprot_sprot', self.uniprot_sprot)
+            self.tell('UniProt SwissProt file provided, adding',
+                      self.uniprot_sprot, ' to configuration file')
+        Configuration.CONFIG.set('databases', 'uniprot_sprot',
+                                 self.uniprot_sprot)
 
         if self.uniprot_goa == 'download':
             self.tell('Downloading UniProt GOA file')
-            uniprot_url = 'ftp://ftp.ebi.ac.uk/pub/databases/GO/goa/UNIPROT/goa_uniprot_all.gaf.gz'
-            command = "wget '{url}' -P '{dir}'".format(url=uniprot_url, dir=uniprot_dir)
+            uniprot_url = "ftp://ftp.ebi.ac.uk/pub/databases/GO/goa/" +\
+                          "UNIPROT/goa_uniprot_all.gaf.gz"
+            command = "wget '{url}' -P '{dir}'".format(url=uniprot_url,
+                                                       dir=uniprot_dir)
             subprocess.call(command, shell=True)
-            self.uniprot_goa = os.path.join(uniprot_dir, 'goa_uniprot_all.gaf.gz')
+            self.uniprot_goa = os.path.join(uniprot_dir,
+                                            'goa_uniprot_all.gaf.gz')
         else:
-            self.tell('UniProt GOA file provided, adding', self.uniprot_goa, ' to configuration file')
+            self.tell('UniProt GOA file provided, adding', self.uniprot_goa,
+                      ' to configuration file')
         Configuration.CONFIG.set('databases', 'uniprot_goa', self.uniprot_goa)
 
     def process_files(self):
@@ -198,7 +241,8 @@ class Install(FancyApp.FancyApp):
         else:
             self.tell('Found uncompressed STRING interactions file, skipping')
 
-        core_ids_file = os.path.join(self.installation_directory, 'data/coreIds')
+        core_ids_file = os.path.join(self.installation_directory,
+                                     'data/coreIds')
         core_ids = []
         if os.path.exists(core_ids_file):
             self.tell('Found coreIds file, skipping inference')
@@ -236,7 +280,9 @@ class Install(FancyApp.FancyApp):
                             fp = None
                         if taxid in core_ids:
                             current_organism = taxid
-                            fn = os.path.join(self.installation_directory, 'data/STRINGSequences/'+taxid+'.faa')
+                            fn = os.path.join(self.installation_directory,
+                                              'data/STRINGSequences/' + taxid +
+                                              '.faa')
                             if not os.path.exists(fn):
                                 fp = open(fn, 'a')
                                 fp.write(line)
@@ -250,12 +296,15 @@ class Install(FancyApp.FancyApp):
             fp.close()
 
         self.tell('Creating BLAST databases from STRING sequences')
-        seq_dir = os.path.join(self.installation_directory, 'data/STRINGSequences')
+        seq_dir = os.path.join(self.installation_directory,
+                               'data/STRINGSequences')
         for fasta in os.listdir(seq_dir):
-            if re.match('.*\.faa$', fasta):
+            if re.match(r'.*\.faa$', fasta):
                 f = os.path.abspath(os.path.join(seq_dir, fasta))
-                if not os.path.exists(f+'.phr'):
-                    subprocess.call('makeblastdb -in {fasta} -out {fasta} -dbtype prot'.format(fasta=f), shell=True)
+                if not os.path.exists(f + '.phr'):
+                    subprocess.call("makeblastdb -in " +
+                                    "{fasta} -out {fasta} -dbtype prot".format(
+                                        fasta=f), shell=True)
 
         self.tell('Uncompressing UniProtKB')
         # UniProt SwissProt
@@ -290,10 +339,13 @@ class Install(FancyApp.FancyApp):
 
         self.tell('Filtering UniProt GOA')
         if self.evidence_codes == 'experimental':
-            self.evidence_codes = GeneOntology.GeneOntology.EXPERIMENTAL_EVIDENCE_CODES
-        Configuration.CONFIG.set('options', 'evidence_codes', ','.join(self.evidence_codes))
+            self.evidence_codes = GeneOntology.GeneOntology\
+                                              .EXPERIMENTAL_EVIDENCE_CODES
+        Configuration.CONFIG.set('options', 'evidence_codes',
+                                 ','.join(self.evidence_codes))
 
-        self.tell('Accepting the following evindece codes:', self.evidence_codes)
+        self.tell('Accepting the following evindece codes:',
+                  self.evidence_codes)
 
         # filter evidence codes using awk
         experimental_goa = self.uniprot_goa.split('.gz')[0] + '.exp'
@@ -303,7 +355,8 @@ class Install(FancyApp.FancyApp):
 
         num_lines = Utilities.wccount(experimental_goa)
         # keep only SwissProt annotations
-        self.filtered_goa = os.path.join(self.installation_directory, 'data/UniprotKB/filtered_goa')
+        self.filtered_goa = os.path.join(self.installation_directory,
+                                         'data/UniprotKB/filtered_goa')
         fg = open(self.filtered_goa, 'w')
         i = 0
         for line in open(experimental_goa, 'r'):
@@ -316,10 +369,12 @@ class Install(FancyApp.FancyApp):
                     proteins_with_function.add(fields[1])
                     fg.write(line)
         fg.close()
-        Configuration.CONFIG.set('databases', 'filtered_goa', self.filtered_goa)
+        Configuration.CONFIG.set('databases', 'filtered_goa',
+                                 self.filtered_goa)
 
         self.tell('Filtering UniProt SwissProt')
-        self.filtered_sprot = os.path.join(self.installation_directory, 'data/UniprotKB/filtered_sprot')
+        self.filtered_sprot = os.path.join(self.installation_directory,
+                                           'data/UniprotKB/filtered_sprot')
         fs = open(self.filtered_sprot, 'w')
         writing = False
         for line in open(self.uniprot_sprot.split('.gz')[0], 'r'):
@@ -331,12 +386,13 @@ class Install(FancyApp.FancyApp):
             elif writing:
                 fs.write(line)
         fs.close()
-        Configuration.CONFIG.set('databases', 'filtered_sprot', self.filtered_sprot)
+        Configuration.CONFIG.set('databases', 'filtered_sprot',
+                                 self.filtered_sprot)
 
     def summary_and_continue(self):
         summary = 'These are the loaded values \n'
-        summary += '\tInstallation directory:\t\t' + self.installation_directory + '\n\n'
-
+        summary += '\tInstallation directory:\t\t'
+        summary += self.installation_directory + '\n\n'
         summary += '\tPath to InterPro executable:\t' + self.interpro + '\n'
         summary += '\tPath to HMMer:\t\t\t' + self.hmmer + '\n'
         summary += '\tPath to blastp:\t\t\t' + self.blastp + '\n'
@@ -357,7 +413,8 @@ class Install(FancyApp.FancyApp):
                 summary += database + '\n'
 
         summary += '\n\tFiltered UniProt GOA:\t\t' + self.filtered_goa + '\n'
-        summary += '\tFiltered UniProt SwissProt:\t' + self.filtered_sprot + '\n\n'
+        summary += '\tFiltered UniProt SwissProt:\t' +\
+            self.filtered_sprot + '\n\n'
 
         summary += '\tEvidence Codes:\t\t\t' + str(self.evidence_codes) + '\n'
 

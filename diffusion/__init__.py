@@ -1,7 +1,8 @@
-from Utils import *
+import abc
+
 import pandas as pd
 
-import abc
+from Utils import FancyApp
 
 
 class Diffusion(FancyApp.FancyApp):
@@ -16,9 +17,16 @@ class Diffusion(FancyApp.FancyApp):
             'score': diffusion_matrix.data
         }
         labelling_df = pd.DataFrame(data)
-        labelling_df = labelling_df.merge(proteins.reset_index(), left_on='protein', right_on='protein idx')
-        labelling_df = labelling_df.merge(terms.reset_index(), left_on='goterm', right_on='term idx')
-        labelling_df[['protein id', 'term id', 'score']].to_csv(filename, sep='\t', index=False, header=None)
+        labelling_df = labelling_df.merge(proteins.reset_index(),
+                                          left_on='protein',
+                                          right_on='protein idx')
+        labelling_df = labelling_df.merge(terms.reset_index(),
+                                          left_on='goterm',
+                                          right_on='term idx')
+        labelling_df[['protein id', 'term id', 'score']].to_csv(filename,
+                                                                sep='\t',
+                                                                index=False,
+                                                                header=None)
 
     @abc.abstractmethod
     def write_results(self, filename):
@@ -48,10 +56,11 @@ class Diffusion(FancyApp.FancyApp):
     @abc.abstractmethod
     def compute_kernel(self, **kwargs):
         """
-        If the diffusion method should make any transformations on the graph, it should be done in this function
+        If the diffusion method should make any transformations on the graph,
+        it should be done in this function
+
         Parameters
         ----------
         kwargs
             will be handled by the implementation accordingly
         """
-

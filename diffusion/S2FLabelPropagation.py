@@ -1,10 +1,9 @@
-from Utils import *
-from diffusion import Diffusion
-
-from scipy import sparse
-from scipy.sparse import linalg
-
 import numpy as np
+from scipy import sparse
+
+from diffusion import Diffusion
+from Utils import Utilities
+
 
 class S2FLabelPropagation(Diffusion):
 
@@ -15,13 +14,14 @@ class S2FLabelPropagation(Diffusion):
         Parameters
         ----------
         graph : scipy.sparse
-            Graph in which the labels should be diffused (before the kernel is built)
+            Graph in which the labels should be diffused
+            (before the kernel is built)
         proteins : pandas.DataFrame
-            Indices of the proteins that conform the graph. This DataFrame can be built using the
-            stand-alone 'utils' command
+            Indices of the proteins that conform the graph.
+            This DataFrame can be built using the stand-alone 'utils' command
         terms : pandas.DataFrame
-            Indices of the GO terms that will be mapped to the diffused seed. This DataFrame can be built using the
-            stand-alone 'utils' command
+            Indices of the GO terms that will be mapped to the diffused seed.
+            This DataFrame can be built using the stand-alone 'utils' command
         """
         super(S2FLabelPropagation, self).__init__()
         self.graph = graph
@@ -44,17 +44,19 @@ class S2FLabelPropagation(Diffusion):
         filename : str
             Path to write the results
         """
-        Diffusion._write_results(self.latest_diffusion, self.proteins, self.terms, filename)
+        Diffusion._write_results(self.latest_diffusion, self.proteins,
+                                 self.terms, filename)
 
     def diffuse(self, initial_guess, **kwargs):
         r"""
-        Diffuses the initial labelling `initial_guess` into the built kernel, if the kernel hasn't been built, it will
+        Diffuses the initial labelling `initial_guess` into the built kernel,
+        if the kernel hasn't been built, it will
         build it using `compute_kernel`
         Parameters
         ----------
         initial_guess : scipy.sparse matrix
-            The initial labelling matrix that will be diffused on the graph, shapes must be consistent to the given
-            graph.
+            The initial labelling matrix that will be diffused on the graph,
+            shapes must be consistent to the given graph.
 
         Returns
         -------
@@ -63,8 +65,10 @@ class S2FLabelPropagation(Diffusion):
 
         Notes
         -----
-        The final labelling is kept in `self.latest_diffusion`, for access convenience. This enables a subsequent
-        call to `write_results` that does not require a re-calculation of the final labelling.
+        The final labelling is kept in `self.latest_diffusion`,
+        for access convenience. This enables a subsequent
+        call to `write_results` that does not require a re-calculation
+        of the final labelling.
         """
         self.tell('Starting diffusion...')
         self.latest_diffusion = self.kernel * initial_guess.todense()
@@ -74,13 +78,17 @@ class S2FLabelPropagation(Diffusion):
 
     def compute_kernel(self, **kwargs):
         r"""
-        Computes the kernel required by S2F making the following transformations:
+        Computes the kernel required by S2F making the following
+        transformations:
 
-        .. math:: J_{ij} = \frac{\sum_{k}W_{ik}W_{jk}}{\sum_{k}W_{ik} + \sum_{k}W_{jk} - \sum_{k}W_{ik}W_{jk}}
+        .. math:: J_{ij} = \frac{\sum_{k}W_{ik}W_{jk}}{\sum_{k}W_{ik} +
+                           \sum_{k}W_{jk} - \sum_{k}W_{ik}W_{jk}}
 
-        .. math:: {W_{\text{S2F}}}_{ij} = \frac{1}{2}\left(\frac{1}{d_i}+ \frac{1}{d_j}\right)J_{ij}W_{ij}
+        .. math:: {W_{\text{S2F}}}_{ij} = \frac{1}{2}\left(\frac{1}{d_i}+
+                                          \frac{1}{d_j}\right)J_{ij}W_{ij}
 
-        where :math:`W` is the graph that was provided to the instance. The final kernel is
+        where :math:`W` is the graph that was provided to the instance.
+        The final kernel is
 
         .. math:: (I + \lambda L)^{-1}
 
@@ -89,9 +97,11 @@ class S2FLabelPropagation(Diffusion):
         Parameters
         ----------
         kwargs
-            Parameters to compute the kernel, the following entries will be handled:
+            Parameters to compute the kernel, the following entries
+            will be handled:
             * 'lambda' : float
-                To be used in the transformation described above. Defaults to 1.0
+                To be used in the transformation described above.
+                Defaults to 1.0
 
         Notes
         -----
@@ -113,7 +123,8 @@ class S2FLabelPropagation(Diffusion):
             degree = W_S2F.sum(axis=1)
             D_S2F = sparse.spdiags(degree.T, 0, n, n)
             L_S2F = D_S2F - W_S2F
-            IlambdaL = sparse.identity(n) + L_S2F.multiply(self.kernel_params['lambda'])
+            param_lambda = self.kernel_params['lambda']
+            IlambdaL = sparse.identity(n) + L_S2F.multiply(param_lambda)
 
             self.tell(r'Inverting (I + \lambda W_S2F)...')
             self.kernel = np.linalg.inv(IlambdaL.todense())

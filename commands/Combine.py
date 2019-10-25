@@ -1,14 +1,10 @@
-from Utils import *
-from graphs import Graph
-from graphs import combination
 
-from scipy import sparse
-from scipy.sparse.linalg import lsqr
-from sklearn.preprocessing import binarize
-
-import pandas as pd
 import numpy as np
-import os
+import pandas as pd
+from scipy import sparse
+
+from graphs import Graph, combination
+from Utils import ColourClass, FancyApp, Utilities
 
 
 class Combine(FancyApp.FancyApp):
@@ -31,7 +27,8 @@ class Combine(FancyApp.FancyApp):
         self.homology = None
         self.seed = None
         self.combined = None
-        self.proteins = Utilities.extract_indices_from_fasta(self.fasta, Utilities.keep_uniprot_accession)
+        self.proteins = Utilities.extract_indices_from_fasta(
+                                self.fasta, Utilities.keep_uniprot_accession)
 
     def run(self):
         self.tell('parsing graph combination file...')
@@ -40,7 +37,8 @@ class Combine(FancyApp.FancyApp):
         self.homology = self.read_homology_file()
         self.tell('parsing seed file...')
         self.seed = self.get_seed_similarity()
-        comb = combination.Combination(self.proteins, self.collection, self.homology, self.seed)
+        comb = combination.Combination(self.proteins, self.collection,
+                                       self.homology, self.seed)
         comb.compute_graph()
         self.tell('writing output file:', self.output)
         comb.write_graph(self.output)
@@ -48,17 +46,21 @@ class Combine(FancyApp.FancyApp):
 
     def read_graph_collection(self):
         # 1. read collection file
-        collection_df = pd.read_csv(self.collection_file, sep=self.collection_sep)
+        collection_df = pd.read_csv(self.collection_file,
+                                    sep=self.collection_sep)
         cols = collection_df.columns
 
         # 2. manually set score columns to float
         collection_df[cols[2:]] = collection_df[cols[2:]].astype('float32')
 
         # 3. we guarantee the lexicographical order between the protein columns
-        Graph.assert_lexicographical_order(collection_df, p1=cols[0], p2=cols[1])
+        Graph.assert_lexicographical_order(collection_df,
+                                           p1=cols[0],
+                                           p2=cols[1])
 
         # 4. forget any self-similarity
-        collection_df = collection_df[collection_df[cols[0]] != collection_df[cols[1]]]
+        collection_df = collection_df[collection_df[cols[0]] !=
+                                      collection_df[cols[1]]]
 
         # 5. build the graph collection
         collection = {}
@@ -67,17 +69,20 @@ class Combine(FancyApp.FancyApp):
             c = list(cols[:2])
             c.append(g)
             graph = collection_df[c]
-            graph = graph[graph[g]>0]
+            graph = graph[graph[g] > 0]
             Graph.assert_lexicographical_order(graph, cols[0], cols[1])
 
-            graph = graph.merge(self.proteins, left_on=cols[0], right_index=True)
-            graph = graph.merge(self.proteins, left_on=cols[1], right_index=True, suffixes = ['1', '2'])
+            graph = graph.merge(self.proteins, left_on=cols[0],
+                                right_index=True)
+            graph = graph.merge(self.proteins, left_on=cols[1],
+                                right_index=True, suffixes=['1', '2'])
 
             p1_idx = graph['protein idx1'].values
             p2_idx = graph['protein idx2'].values
 
             collection[g] = sparse.coo_matrix((graph[g], (p1_idx, p2_idx)),
-                                              shape=(len(self.proteins), len(self.proteins)))
+                                              shape=(len(self.proteins),
+                                                     len(self.proteins)))
         return collection
 
     def get_seed_similarity(self):
@@ -101,7 +106,8 @@ class Combine(FancyApp.FancyApp):
         columns = ['protein1', 'protein2', 'score']
         types = dict([(x, 'float32') if "protein" not in x
                       else (x, "str") for x in columns])
-        df = pd.read_csv(self.homology_file, sep=self.homology_sep, names=columns, dtype=types)
+        df = pd.read_csv(self.homology_file, sep=self.homology_sep,
+                         names=columns, dtype=types)
 
         min_protein = df[["protein1", "protein2"]].min(axis=1)
         max_protein = df[["protein1", "protein2"]].max(axis=1)
@@ -109,8 +115,10 @@ class Combine(FancyApp.FancyApp):
         df.loc[:, "protein2"] = max_protein
 
         df = df.merge(self.proteins, left_on='protein1', right_index=True)
-        df = df.merge(self.proteins, left_on='protein2', right_index=True, suffixes=['1', '2'])
+        df = df.merge(self.proteins, left_on='protein2', right_index=True,
+                      suffixes=['1', '2'])
         p1_idx = df['protein idx1'].values
         p2_idx = df['protein idx2'].values
         return sparse.coo_matrix((df['score'], (p1_idx, p2_idx)),
-                                 shape=(len(self.proteins), len(self.proteins)))
+                                 shape=(len(self.proteins),
+                                        len(self.proteins)))

@@ -1,11 +1,11 @@
-from Utils import *
-from graphs import Graph
-from scipy import sparse
-
-import pandas as pd
-import numpy as np
 import os
 import subprocess
+
+import numpy as np
+import pandas as pd
+from scipy import sparse
+
+from graphs import Graph
 
 
 class Homology(Graph):
@@ -19,12 +19,15 @@ class Homology(Graph):
         self.homology_graph = None
 
     def get_graph(self, **kwargs):
-        h = self.homology_graph.merge(self.proteins, left_on='Protein 1', right_index=True)
-        h = h.merge(self.proteins, left_on='Protein 2', right_index=True, suffixes=['1', '2'])
+        h = self.homology_graph.merge(self.proteins, left_on='Protein 1',
+                                      right_index=True)
+        h = h.merge(self.proteins, left_on='Protein 2', right_index=True,
+                    suffixes=['1', '2'])
         p1_idx = h['protein idx1'].values
         p2_idx = h['protein idx2'].values
         return sparse.coo_matrix((h['weight'], (p1_idx, p2_idx)),
-                                 shape=(len(self.proteins), len(self.proteins)))
+                                 shape=(len(self.proteins),
+                                        len(self.proteins)))
 
     def write_graph(self, filename):
         Graph.assert_lexicographical_order(self.homology_graph)
@@ -35,11 +38,15 @@ class Homology(Graph):
         if not os.path.exists(homology_graph):
             self.tell('Computing homology graph...')
             # compute the homology graph
-            blast_command = 'blastp -query {fasta} -db {blastdb} -out {out} -outfmt "6 std qlen"'
+            blast_command = "blastp -query {fasta} -db {blastdb} " +\
+                            "-out {out}" + '-outfmt "6 std qlen"'
             out = os.path.join(self.graphs_dir, self.alias + '_homology.blast')
             if not os.path.exists(out):
-                self.tell(blast_command.format(fasta=self.fasta, blastdb=self.fasta, out=out))
-                subprocess.call(blast_command.format(fasta=self.fasta, blastdb=self.fasta, out=out), shell=True)
+                self.tell(blast_command.format(fasta=self.fasta,
+                                               blastdb=self.fasta, out=out))
+                subprocess.call(blast_command.format(fasta=self.fasta,
+                                                     blastdb=self.fasta,
+                                                     out=out), shell=True)
 
             self.tell('Parsing BLAST output...')
             # parse the blast output
@@ -54,7 +61,8 @@ class Homology(Graph):
                     homology[query_id] = {}
 
                 if subject_id in homology[query_id]:
-                    homology[query_id][subject_id] = np.min([homology[query_id][subject_id], evalue])
+                    homology[query_id][subject_id] = np.min([
+                        homology[query_id][subject_id], evalue])
                 else:
                     homology[query_id][subject_id] = evalue
 
@@ -110,8 +118,3 @@ class Homology(Graph):
             self.tell('Homology graph found, skipping computation...')
             self.homology_graph = pd.read_pickle(homology_graph)
             Graph.assert_lexicographical_order(self.homology_graph)
-
-
-
-
-
