@@ -183,6 +183,27 @@ if __name__ == '__main__':
                                nargs='+', default='infer')
     combine_seeds.add_argument('--output', help='Path to desired output file', required=True)
 
+    build_goa_clamp = subparsers.add_parser(
+        'build-clamp',
+        description='S2F build-clamp: given a fasta file, extracts all the GO annotations from the UniProtKB that'
+                    'use the provided evidence codes. This command will fail if run previously to a full S2F '
+                    'installation using the `Install` command',
+        help='build-clamp command'
+    )
+
+    build_goa_clamp.add_argument('--evidence-codes',
+                                 help='manually provide a list of evidence codes that will be used to filter the '
+                                      'UniProt GOA. If not provided, S2F will use experimental evidence codes.',
+                                 default='experimental')
+    build_goa_clamp.add_argument('--fasta', help='Path to the organism fasta', required=True)
+    build_goa_clamp.add_argument('--output',
+                                 help='Path to desired output file. The fasta filename with an added `.clamp` extension'
+                                      'will be created by S2F by default.', default='infer')
+    build_goa_clamp.add_argument('--config-file',
+                                 help='location of the installation configuration file that will be loaded. If not '
+                                      'provided, the default configuration file will be loaded',
+                                 default=os.path.join(os.path.dirname(os.path.abspath(__file__)), 's2f.conf'))
+
     args = parser.parse_args()
     if args.subcommand == 'predict':
         if args.run_config is None and (args.alias is None or args.obo is None or args.fasta is None):
@@ -191,9 +212,8 @@ if __name__ == '__main__':
                          '\t--obo\n'
                          '\t--fasta')
 
-    args.func(args)
-#    try:
-#        args.func(args)
-#    except AttributeError as e:
-#        print(e)
-#        parser.parse_args(['--help'])
+    try:
+        args.func(args)
+    except AttributeError as e:
+        print(e)
+        parser.parse_args(['--help'])

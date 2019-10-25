@@ -38,3 +38,8 @@ def combine_seeds(args):
     from commands.CombineSeeds import CombineSeeds
     c = CombineSeeds(args)
     c.run()
+
+def build_clamp(args):
+    from commands.BuildClamp import BuildClamp
+    b = BuildClamp(args)
+    b.run()
