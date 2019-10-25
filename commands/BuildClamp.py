@@ -34,7 +34,7 @@ class BuildClamp(FancyApp.FancyApp):
         if self.__verbose__:
             prog = ProgressBar.ProgressBar(0, num_lines, 77, mode='dynamic', char='-')
         for line in open(uniprot_goa):
-            fields = line.split()
+            fields = line.split('\t')
             if fields[1] in self.proteins.index and fields[6] in self.evidence_codes:
                 out.write(line)
             if self.__verbose__:
