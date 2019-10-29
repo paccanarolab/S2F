@@ -242,23 +242,49 @@ class GeneOntology(FancyApp.FancyApp):
         if self.__verbose__:
             prog.finish_bar()
 
+    def load_clamp_file(self, clamp_file, organism_name, annotate_obsolete=False):
+        """
+        Loads a tab separated annotation file into the structure. The structure
+        of such file mist be:
+        <protein_id>TAB<go_term_id>
+        Parameters
+        ----------
+        clamp_file : path to the file
+        organism_name : the name that keeps these annotations
+                              separated from other annotations in the structure
+        annotate_obsolete : bool, optional
+            if True, obsolete terms will be considered in the annotation
+            (the default is False)
+        """
+        for line in open(clamp_file):
+            fields = line.strip().split('\t')
+            term = self.find_term(fields[1])
+            if annotate_obsolete or not term.is_obsolete:
+                term.annotations[organism_name][fields[0]] = 1
+
     def load_annotation_file(self, annotation_file, organism_name,
                              evidence_codes=EXPERIMENTAL_EVIDENCE_CODES,
                              domains=DOMAINS, blacklist=None,
                              annotate_obsolete=False):
         """
         Loads a GOA annotation file into the structure.
-        :param annotation_file: path to the GOA file
-        :param organism_name: the name that keeps these annotations
-                              separated from other annotations in the structure
-        :param evidence_codes: a list of valid evidence codes, only
-                               anntoations with evidence codes in the list
-                               will be
-            added to the structure. Defaults to:
 
-        :param domains:
-        :param blacklist
-        :return:
+        Parameters
+        ----------
+        annotation_file : path to the GOA file
+        organism_name : the name that keeps these annotations
+                              separated from other annotations in the structure
+        evidence_codes : a list of valid evidence codes, only
+                               anntoations with evidence codes in the list
+                               will be added to the structure. Defaults to
+                               `EXPERIMENTAL_EVIDENCE_CODES`
+        domains : a list of domains that will be considered, defaults to
+                        `DOMAINS`
+        blacklist : list of taxons to ignore. Annotations associated to
+                          these taxons will be gnored.
+        annotate_obsolete : bool, optional
+            if True, obsolete terms will be considered in the annotation
+            (the default is False)
         """
         parser = AnnotationParser.AnnotationFile(annotation_file,
                                                  organism_name)

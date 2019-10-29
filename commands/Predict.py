@@ -306,7 +306,7 @@ class Predict(FancyApp.FancyApp):
 
     def load_clamp(self):
         self.tell('Loading GOA annotations to clamp...')
-        self.go.load_annotation_file(self.goa_clamp, 'clamp', self.evidence_codes)
+        self.go.load_clamp_file(self.goa_clamp, 'clamp')
         self.tell('Up-propagating clamp annotations...')
         self.go.up_propagate_annotations('clamp')
         self.tell('Building clamp matrix...')
