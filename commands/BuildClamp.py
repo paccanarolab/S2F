@@ -36,7 +36,7 @@ class BuildClamp(FancyApp.FancyApp):
         for line in open(uniprot_goa):
             fields = line.split('\t')
             if fields[1] in self.proteins.index and fields[6] in self.evidence_codes:
-                out.write(line)
+                out.write("{protein}\t{go_term}\n".format(protein=fields[1], go_term=fields[4]))
             if self.__verbose__:
                 prog.increment_amount()
                 prog.print_bar()
