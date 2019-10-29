@@ -28,7 +28,8 @@ if __name__ == '__main__':
     predict.set_defaults(func=commands.predict)
     predict.add_argument('--run-config',
                          help='path to the run configuration file ' +
-                              '(overrides all other arguments)')
+                              '(overrides all other arguments)',
+                         default='arguments')
     predict.add_argument('--config-file',
                          help='location of the installation configuration ' +
                               'file that will be loaded. If not provided, '
