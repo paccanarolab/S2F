@@ -19,7 +19,7 @@ class Predict(FancyApp.FancyApp):
     def __init__(self, args):
         super(Predict, self).__init__()
         self.colour = ColourClass.bcolors.OKGREEN
-        if args.run_config != 'arguments'
+        if args.run_config != 'arguments':
             self.run_config = os.path.expanduser(args.run_config)
         else:
             self.run_config = 'arguments'
