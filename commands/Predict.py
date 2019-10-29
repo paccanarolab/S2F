@@ -79,7 +79,7 @@ class Predict(FancyApp.FancyApp):
             self.homology_graph = os.path.expanduser(args.homology_graph)
 
             self.interpro_output = os.path.expanduser(args.interpro_output)
-            self.hmmer_output = os.path.expanduser(args.hmmer_seed)
+            self.hmmer_output = os.path.expanduser(args.hmmer_output)
 
             self.hmmer_blacklist = os.path.expanduser(args.hmmer_blacklist)
             self.transfer_blacklist = os.path.expanduser(
