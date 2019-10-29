@@ -65,9 +65,10 @@ class Predict(FancyApp.FancyApp):
                                           'goa_clamp',
                                           fallback='compute')
         else:
+            self.config_file = os.path.expanduser(args.config_file)
+
             Configuration.load_configuration(self.config_file)
 
-            self.config_file = os.path.expanduser(args.config_file)
             self.alias = args.alias
             self.obo = os.path.expanduser(args.obo)
             self.fasta = os.path.expanduser(args.fasta)
