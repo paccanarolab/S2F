@@ -3,6 +3,7 @@ import subprocess
 import sys
 
 import pandas as pd
+import numpy as np
 from scipy import sparse
 
 from diffusion import Diffusion
@@ -133,6 +134,7 @@ class Predict(FancyApp.FancyApp):
         self.terms = None
         self.proteins = None
         self.prediction = None
+        self.clamp_matrix = None
 
         if self.cpu == 'infer':
             # https://docs.python.org/3/library/os.html#os.cpu_count
@@ -158,6 +160,12 @@ class Predict(FancyApp.FancyApp):
         sparse.save_npz(os.path.join(self.output_dir, 'homology.npz'),
                         graph_homology)
         # 6. GOA clamp if provided
+        if os.path.exists(self.goa_clamp):
+            self.load_clamp()
+            self.tell('Clamping InterPro seed...')
+            ip_seed = self.clamp(ip_seed)
+            self.tell('Clamping HMMER seed...')
+            hmmer_seed = self.clamp(hmmer_seed)
         # 7. graph combination
         combined_graph = self.combine_graphs(graph_collection,
                                              graph_homology,
@@ -171,7 +179,13 @@ class Predict(FancyApp.FancyApp):
         # 10. diffuse hmmer
         hmmer_diff = diff.diffuse(hmmer_seed)
         # 11. output combination
+        if os.path.exists(self.goa_clamp):
+            self.tell('Clamping diffused InterPro')
+            ip_diff = self.clamp(ip_diff)
+            self.tell('Clamping diffused HMMER')
+            hmmer_diff = self.clamp(hmmer_diff)
         self.prediction = 0.9 * ip_diff + 0.1 * hmmer_diff
+        self.write_prediction(os.path.join(self.output_dir, 'prediction.df'))
 
     def write_prediction(self, filename):
         Diffusion._write_results(self.prediction, self.proteins, self.terms,
@@ -290,8 +304,27 @@ class Predict(FancyApp.FancyApp):
         hom.compute_graph()
         return hom.get_graph()
 
-    def goa_clamp(self):
-        pass
+    def load_clamp(self):
+        self.tell('Loading GOA annotations to clamp...')
+        self.go.load_annotation_file(self.goa_clamp, 'clamp', self.evidence_codes)
+        self.tell('Up-propagating clamp annotations...')
+        self.go.up_propagate_annotations('clamp')
+        self.tell('Building clamp matrix...')
+        clamp_df = self.go.get_annotations('clamp')
+        clamp_df = clamp_df.merge(self.proteins, left_on='Protein', right_index=True)
+        clamp_df = clamp_df.merge(self.terms, left_on='GO ID', right_index=True)
+
+        p_idx = clamp_df['protein idx'].values
+        go_idx = clamp_df['term idx'].values
+
+        self.clamp_matrix = sparse.coo_matrix((np.ones(len(clamp_df)),
+                                               (p_idx, go_idx)),
+                                              shape=(len(self.proteins),
+                                                     len(self.terms)))
+
+    def clamp(self, seeds):
+        clamp_bigger = self.clamp_matrix > seeds
+        return seeds - seeds.multiply(clamp_bigger) + self.clamp_matrix.multiply(clamp_bigger)
 
     def combine_graphs(self, graph_collection, graph_homology, ip_seed):
         comb = combination.Combination(self.proteins, graph_collection,
