@@ -70,7 +70,7 @@ class HMMerSeed(Seed):
                                          blacklist=self.blacklist)
             self.tell('Caching GOA annotations')
             goa = self.go.get_annotations('GOA')
-            self.evalue_file = open(self.evalue_file, 'w')
+            evalue_fp = open(self.evalue_file, 'w')
             self.tell('Writing evalue file')
             for line in open(self.hmmer):
                 if line.startswith('#'):
@@ -84,11 +84,11 @@ class HMMerSeed(Seed):
                     target = target.split('|')[1]
                 goa_target = goa[goa['Protein'] == target]
                 if len(goa_target) > 0:
-                    self.evalue_file.write(query + '\t' + target +
+                    evalue_fp.write(query + '\t' + target +
                                            '\t' + evalue + '\t')
-                    self.evalue_file.write('\t'.join(
+                    evalue_fp.write('\t'.join(
                         goa_target['GO ID'].unique()))
-                    self.evalue_file.write('\n')
-            self.evalue_file.close()
+                    evalue_fp.write('\n')
+            evalue_fp.close()
         else:
             self.tell('evalue file found, skipping computation')
