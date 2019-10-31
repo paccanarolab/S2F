@@ -39,7 +39,7 @@ class Homology(Graph):
             self.tell('Computing homology graph...')
             # compute the homology graph
             blast_command = "blastp -query {fasta} -db {blastdb} " +\
-                            "-out {out}" + '-outfmt "6 std qlen"'
+                            "-out {out}" + ' -outfmt "6 std qlen"'
             out = os.path.join(self.graphs_dir, self.alias + '_homology.blast')
             if not os.path.exists(out):
                 self.tell(blast_command.format(fasta=self.fasta,
