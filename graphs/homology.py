@@ -67,14 +67,13 @@ class Homology(Graph):
                     homology[query_id][subject_id] = evalue
 
             self.tell('Building graph...')
-            graph = {}
             hom_graph = {'Protein 1': [], 'Protein 2': [], 'weight': []}
-            ind_matrix = []
             proteins = sorted(homology.keys())
+            graph = np.zeros(len(proteins), len(proteins))
             maxi = -1.0
             for i, p1 in enumerate(proteins):
-                for p2 in proteins[i:]:
-
+                for j in range(i, len(proteins)):
+                    p2 = proteins[j]
                     e12 = 10.0
                     e21 = 10.0
 
@@ -87,26 +86,25 @@ class Homology(Graph):
                     transformed = 0.0
 
                     if val == 0 or p1 == p2:
-                        ind_matrix.append((p1, p2))
-                        ind_matrix.append((p2, p1))
                         transformed = 1.0
                     elif 0.0 < val < 11.0:
                         transformed = -1.0 * np.log(val/11.0)
                         maxi = np.max([maxi, transformed])
-                    graph[p1, p2] = transformed
-                    graph[p2, p1] = transformed
-            inv_max = 1.0 / maxi
+                    graph[i, j] = transformed
+                    graph[j, i] = transformed
 
+            inv_max = 1.0 / maxi
+            mask_neg = graph != 1
+
+            graph[mask_neg] *= inv_max
             self.tell('Normalising homology graph...')
             for i, p1 in enumerate(proteins):
-                for p2 in proteins[i:]:
-                    val = graph[p1, p2]
+                for j in range(i, len(proteins)):
+                    val = graph[i, j]
+                    p2 = proteins[j]
                     hom_graph['Protein 1'].append(p1)
                     hom_graph['Protein 2'].append(p2)
-                    if (p1, p2) in ind_matrix:
-                        hom_graph['weight'].append(val)
-                    else:
-                        hom_graph['weight'].append(inv_max * val)
+                    hom_graph['weight'].append(val)
             self.homology_graph = pd.DataFrame.from_dict(hom_graph)
 
             # we make sure that lexicographical order is maintained so that
