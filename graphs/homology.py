@@ -69,7 +69,7 @@ class Homology(Graph):
             self.tell('Building graph...')
             hom_graph = {'Protein 1': [], 'Protein 2': [], 'weight': []}
             proteins = sorted(homology.keys())
-            graph = np.zeros(len(proteins), len(proteins))
+            graph = np.zeros((len(proteins), len(proteins)))
             maxi = -1.0
             for i, p1 in enumerate(proteins):
                 for j in range(i, len(proteins)):
