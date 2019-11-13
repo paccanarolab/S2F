@@ -175,13 +175,26 @@ class Predict(FancyApp.FancyApp):
                                              graph_homology,
                                              ip_seed)
         # 8. prepare diffusion kernel
-        kernel_params = {'lambda': 0.1}
-        diff = S2FLabelPropagation(combined_graph, self.proteins, self.terms)
-        diff.compute_kernel(**kernel_params)
-        # 9. diffuse interpro
-        ip_diff = diff.diffuse(ip_seed)
-        # 10. diffuse hmmer
-        hmmer_diff = diff.diffuse(hmmer_seed)
+        ip_diff_file = os.path.join(self.output_dir, 'ip_seed.diffusion')
+        hmmer_diff_file = os.path.join(self.output_dir, 'hmmer_seed.diffusion')
+        if os.path.exists(ip_diff_file) and os.path.exists(hmmer_diff_file):
+            self.tell('Diffusion files found, skipping computation...')
+            ip_diff = sparse.load_npz(ip_diff_file + '.npz')
+            hmmer_diff = sparse.load_npz(hmmer_diff_file + '.npz')
+        else:
+            kernel_params = {'lambda': 0.1}
+            diff = S2FLabelPropagation(combined_graph, self.proteins, self.terms)
+            diff.compute_kernel(**kernel_params)
+            # 9. diffuse interpro
+            self.tell('Diffusing InterPro seed')
+            ip_diff = diff.diffuse(ip_seed)
+            sparse.save_npz(ip_diff_file + '.npz', ip_diff)
+            diff.write_results(ip_diff_file)
+            # 10. diffuse hmmer
+            self.tell('Diffusing HMMER seed')
+            hmmer_diff = diff.diffuse(hmmer_seed)
+            sparse.save_npz(hmmer_diff_file + '.npz', hmmer_diff)
+            diff.write_results(hmmer_diff_file)
         # 11. output combination
         if os.path.exists(self.goa_clamp):
             self.tell('Clamping diffused InterPro')
@@ -327,7 +340,9 @@ class Predict(FancyApp.FancyApp):
                                                      len(self.terms)))
 
     def clamp(self, seeds):
+        self.warning('clamp_bigger')
         clamp_bigger = self.clamp_matrix > seeds
+        self.warning('multiply')
         return seeds - seeds.multiply(clamp_bigger) + self.clamp_matrix.multiply(clamp_bigger)
 
     def combine_graphs(self, graph_collection, graph_homology, ip_seed):
