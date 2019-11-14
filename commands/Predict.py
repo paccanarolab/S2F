@@ -204,6 +204,10 @@ class Predict(FancyApp.FancyApp):
             self.tell('Clamping diffused HMMER')
             hmmer_diff = self.clamp(hmmer_diff)
         self.tell('Adding HMMER and InterPro diffusions')
+        self.tell('shapes:',
+                  'ip_diff', ip_diff.shape, '\n\t\t'
+                  'hmmer_diff', hmmer_diff.shape, '\n\t\t',
+                  'clamp_matrix', self.clamp_matrix.shape)
         self.prediction = 0.9 * ip_diff + 0.1 * hmmer_diff
         self.write_prediction(os.path.join(self.output_dir, 'prediction.df'))
 
