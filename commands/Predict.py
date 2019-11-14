@@ -355,7 +355,7 @@ class Predict(FancyApp.FancyApp):
     def combine_graphs(self, graph_collection, graph_homology, ip_seed):
         combined_graph_filename = os.path.join(self.combination_dir, self.alias)
         combined_graph_sparse_filename = combined_graph_filename + '.npz'
-        if not os.path.exists(combined_graph_filename)
+        if not os.path.exists(combined_graph_filename):
             comb = combination.Combination(self.proteins, graph_collection,
                                            graph_homology, ip_seed)
             comb.compute_graph()
