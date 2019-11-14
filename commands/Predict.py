@@ -134,6 +134,8 @@ class Predict(FancyApp.FancyApp):
                                         'seeds/interpro')
         self.seed_dir_H = os.path.join(self.installation_directory,
                                        'seeds/hmmer')
+        self.combination_dir = os.path.join(self.installation_directory,
+                                            'graphs', 'combined')
         self.go = GeneOntology.GeneOntology(self.obo, verbose=True)
         self.terms = None
         self.proteins = None
@@ -347,10 +349,19 @@ class Predict(FancyApp.FancyApp):
         return seeds - seeds.multiply(clamp_bigger) + self.clamp_matrix.multiply(clamp_bigger)
 
     def combine_graphs(self, graph_collection, graph_homology, ip_seed):
-        comb = combination.Combination(self.proteins, graph_collection,
-                                       graph_homology, ip_seed)
-        comb.compute_graph()
-        return comb.get_graph()
+        combined_graph_filename = os.path.join(self.combination_dir, self.alias)
+        combined_graph_sparse_filename = combined_graph_filename + '.npz'
+        if not os.path.exists(combined_graph_filename)
+            comb = combination.Combination(self.proteins, graph_collection,
+                                           graph_homology, ip_seed)
+            comb.compute_graph()
+            comb.write_graph(combined_graph_filename)
+            graph = comb.get_graph()
+            sparse.save_npz(combined_graph_sparse_filename, graph)
+        else:
+            self.tell('found combined graph, skipping comptuation')
+            graph = sparse.load_npz(combined_graph_sparse_filename)
+        return graph
 
     def summary_and_continue(self):
         summary = 'These are the loaded values \n'
