@@ -80,6 +80,11 @@ if __name__ == '__main__':
                               ' format of this file is: ' +
                               'PROTEIN_ID<tab>GO_ID',
                          default='compute')
+    predict.add_argument('-ua', '--unattended',
+                         help='The prediction will not be interactive, and '
+                              'all configurations will be accepted without '
+                              'prompting the user.',
+                         action='store_true')
 
     # TODO: perhaps it is a good idea to add the BLAST executable
     # as a parameter as well

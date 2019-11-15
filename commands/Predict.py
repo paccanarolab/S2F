@@ -64,6 +64,9 @@ class Predict(FancyApp.FancyApp):
             self.goa_clamp = run_conf.get('functions',
                                           'goa_clamp',
                                           fallback='compute')
+            self.unattended_mode = run_conf.getboolean('functions',
+                                                       'unattended',
+                                                       fallback=False)
         else:
             self.config_file = os.path.expanduser(args.config_file)
 
@@ -86,6 +89,7 @@ class Predict(FancyApp.FancyApp):
                                             args.transfer_blacklist)
 
             self.goa_clamp = os.path.expanduser(args.goa_clamp)
+            self.unattended_mode = args.unattended is True
 
         self.installation_directory = os.path.expanduser(
             Configuration.CONFIG.get('directories', 'installation_directory'))
@@ -126,7 +130,8 @@ class Predict(FancyApp.FancyApp):
                          '\tfasta')
             sys.exit(1)
 
-        self.summary_and_continue()
+        if not self.unattended_mode:
+            self.summary_and_continue()
 
         self.output_dir = os.path.join(self.installation_directory,
                                        'output', self.alias)
@@ -345,9 +350,7 @@ class Predict(FancyApp.FancyApp):
                                                      len(self.terms)))
 
     def clamp(self, seeds):
-        self.warning('clamp_bigger')
         clamp_bigger = self.clamp_matrix > seeds
-        self.warning('multiply')
         return seeds - seeds.multiply(clamp_bigger) + self.clamp_matrix.multiply(clamp_bigger)
 
     def combine_graphs(self, graph_collection, graph_homology, ip_seed):
