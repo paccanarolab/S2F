@@ -9,7 +9,7 @@ from scipy import sparse
 from diffusion import Diffusion
 from diffusion.S2FLabelPropagation import S2FLabelPropagation
 from GOTool import GeneOntology
-from graphs import collection, combination, homology
+from graphs import collection, combination, homology, Graph
 from seeds import hmmer, interpro
 from Utils import ColourClass, Configuration, FancyApp, Utilities
 
@@ -366,6 +366,7 @@ class Predict(FancyApp.FancyApp):
         else:
             self.tell('found combined graph, skipping comptuation')
             graph = sparse.load_npz(combined_graph_sparse_filename)
+        graph = Graph.fill_lower_triangle(graph)
         return graph
 
     def summary_and_continue(self):

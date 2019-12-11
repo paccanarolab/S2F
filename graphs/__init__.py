@@ -85,7 +85,7 @@ class Graph(FancyApp.FancyApp):
         """
         Given a (N, N) sparse matrix in COO format, returns a sparse matrix
         of dimensions (N*(N-1)/2, 1), which keeps only the upper triangle
-        avobe the main diagonal.
+        above the main diagonal.
 
         This function requires that x is the output of scipy.sparse.triu(m, 1)
 
@@ -109,3 +109,16 @@ class Graph(FancyApp.FancyApp):
         rows, cols = Graph.triangular2ij(x.row, n)
         return sparse.coo_matrix((x.data, (rows, cols)),
                                  shape=(n, n))
+
+    @staticmethod
+    def fill_lower_triangle(x):
+        """
+        Given a sparse matrix with only the upper triangle, fill the
+        lower triangle and return.
+
+        :param x: scipy.sparse.coo_matrix with shape (N, N)
+        :return: scipy.sparse.coo_matrix with shape (N, N)
+        """
+        return sparse.coo_matrix(
+            sparse.triu(x, 1) + sparse.triu(x, 1).T
+        )
