@@ -34,7 +34,7 @@ class GOAHistory(FancyApp):
         for annotation in parser:
             date = datetime.datetime.strptime(annotation.date, '%Y%m%d')
             year = date.year
-            if year <= self.year:
+            if year >= self.year:
                 if len(annotation.qualifiers) > 0 and \
                    annotation.qualifiers[0] != 'NOT':
                     continue
