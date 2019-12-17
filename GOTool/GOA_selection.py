@@ -4,6 +4,12 @@ import pandas as pd
 
 from GeneOntology import GeneOntology
 
+__author__ = 'Mateo Torres'
+__email__ = 'Mateo.Torres.2015@live.rhul.ac.uk'
+__copyright__ = 'Copyright (c) 2020, Mateo Torres'
+__license__ = 'MIT'
+__version__ = '0.1'
+
 go = GeneOntology('example data/go.obo')
 go.build_structure()
 org = 'Acetoanaerobium sticklandii'
