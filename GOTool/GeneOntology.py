@@ -133,6 +133,14 @@ class GOTerm(object):
                 ancestors |= term.get_ancestors(relations)
         return ancestors
 
+    def get_descendants(self, relations=VALID_RELATIONS):
+        descendants = set()
+        for relation in relations:
+            descendants |= self.relations['a_' + relation]
+            for term in self.relations['a_' + relation]:
+                descendants |= term.get_descendants(relations)
+        return descendants
+
 
 class GeneOntology(FancyApp.FancyApp):
 

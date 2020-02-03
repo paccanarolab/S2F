@@ -293,6 +293,24 @@ if __name__ == '__main__':
                                       'provided, the default configuration file will be loaded',
                                  default=os.path.join(os.path.dirname(os.path.abspath(__file__)), 's2f.conf'))
 
+
+    rescore_continuous = subparsers.add_parser(
+        'rescore-continuous',
+        description='S2F continuous re-scoring: Re-scores the output of S2F to meet the CAFA challenge conditions.',
+        help='rescore-continuous command'
+    )
+    rescore_continuous.set_defaults(func=commands.rescore_continuous)
+    rescore_continuous.add_argument('--obo',
+                                    help='Path to obo file (text version)',
+                                    required=True)
+    rescore_continuous.add_argument('--prediction',
+                                    help='Path to prediction file (text version)',
+                                    required=True)
+    rescore_continuous.add_argument('--th-start', type=float,
+                                    help='Initial threshold')
+    rescore_continuous.add_argument('--outdir', 
+                                    help='output_directory')
+
     args = parser.parse_args()
     if args.subcommand == 'predict':
         if args.run_config is None and (args.alias is None or args.obo is None

@@ -39,7 +39,14 @@ def combine_seeds(args):
     c = CombineSeeds(args)
     c.run()
 
+
 def build_clamp(args):
     from commands.BuildClamp import BuildClamp
     b = BuildClamp(args)
     b.run()
+
+
+def rescore_continuous(args)
+    from commands.RescoreContinuous import RescoreContinuous
+    r = RescoreContinuous()
+    r.run()
