@@ -133,6 +133,12 @@ class GOTerm(object):
                 ancestors |= term.get_ancestors(relations)
         return ancestors
 
+    def get_children(self, relations=VALID_RELATIONS):
+        children = set()
+        for relation in relations:
+            children |= self.relations['a_' + relation]
+        return children
+
     def get_descendants(self, relations=VALID_RELATIONS):
         descendants = set()
         for relation in relations:
