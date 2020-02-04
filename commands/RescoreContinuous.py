@@ -6,15 +6,12 @@ import pandas as pd
 import numpy as np
 import os
 
-PREDICTION_DF = None
-GO = None
-
-def filter_predictions_worker(th, protein):
-    df = PREDICTION_DF[PREDICTION_DF.protein == protein]
+def filter_predictions_worker(df, th, protein, go):
+    df.to_csv('test.df', sep='\t', header=None)
     data = {'protein':[], 'go_term':[], 'score':[]}
     term_cache = set()
     for go_term in df.go_term.unique():
-        term = GO.find_term(go_term)
+        term = go.find_term(go_term)
         score = df[df.go_term == go_term].at[0, 'score']
         children = term.get_children()
         keep = True
@@ -68,21 +65,22 @@ class RescoreContinuous(FancyApp.FancyApp):
 
     def run(self):
         self.tell('Building Gene Ontology')
-        GO = GeneOntology.GeneOntology(self.obo, verbose=True)
-        GO.build_structure()
+        self.go = GeneOntology.GeneOntology(self.obo, verbose=True)
+        self.go.build_structure()
         self.tell('Loading prediction file...')
-        PREDICTION_DF = pd.read_csv(self.prediction, header=None, sep='\t',
+        prediction_df = pd.read_csv(self.prediction, header=None, sep='\t',
                                     names=['protein', 'go_term', 'score'],
                                     dtype={'protein':str, 'go_term':str, 'score':np.float32})
         filtered_df = None
-        proteins = PREDICTION_DF.protein.unique()
+        proteins = prediction_df.protein.unique()
         params = []
         self.tell('gathering parameters for parallel pool')
         if self.__verbose__:
             prog = ProgressBar.ProgressBar(0, len(proteins), 77, mode='dynamic', char='-')
         for protein in proteins:
+            predictions = prediction_df[prediction_df.protein == protein][['go_term', 'score']]
             th = self.th_start
-            params.append([th, protein])
+            params.append([predictions, th, protein, self.go])
             if self.__verbose__:
                 prog.increment_amount()
                 prog.print_bar()
