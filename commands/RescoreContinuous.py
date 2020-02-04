@@ -6,12 +6,15 @@ import pandas as pd
 import numpy as np
 import os
 
-def filter_predictions_worker(df, th, protein, go):
-    df.to_csv('test.df', sep='\t', header=None)
+PREDICTION_DF = None
+GO = None
+
+def filter_predictions_worker(th, protein):
+    df = PREDICTION_DF[PREDICTION_DF.protein == protein]
     data = {'protein':[], 'go_term':[], 'score':[]}
     term_cache = set()
     for go_term in df.go_term.unique():
-        term = go.find_term(go_term)
+        term = GO.find_term(go_term)
         score = df[df.go_term == go_term].at[0, 'score']
         children = term.get_children()
         keep = True
@@ -65,10 +68,10 @@ class RescoreContinuous(FancyApp.FancyApp):
 
     def run(self):
         self.tell('Building Gene Ontology')
-        self.go = GeneOntology.GeneOntology(self.obo, verbose=True)
-        self.go.build_structure()
+        GO = GeneOntology.GeneOntology(self.obo, verbose=True)
+        GO.build_structure()
         self.tell('Loading prediction file...')
-        prediction_df = pd.read_csv(self.prediction, header=None, sep='\t',
+        PREDICTION_DF = pd.read_csv(self.prediction, header=None, sep='\t',
                                     names=['protein', 'go_term', 'score'],
                                     dtype={'protein':str, 'go_term':str, 'score':np.float32})
         filtered_df = None
@@ -78,9 +81,8 @@ class RescoreContinuous(FancyApp.FancyApp):
         if self.__verbose__:
             prog = ProgressBar.ProgressBar(0, len(proteins), 77, mode='dynamic', char='-')
         for protein in proteins:
-            predictions = prediction_df[prediction_df.protein == protein]['go_term', 'score']
             th = self.th_start
-            params.append([predictions, th, protein, self.go])
+            params.append([th, protein])
             if self.__verbose__:
                 prog.increment_amount()
                 prog.print_bar()
