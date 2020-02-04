@@ -75,7 +75,7 @@ class RescoreContinuous(FancyApp.FancyApp):
                                     names=['protein', 'go_term', 'score'],
                                     dtype={'protein':str, 'go_term':str, 'score':np.float32})
         filtered_df = None
-        proteins = prediction_df.protein.unique()
+        proteins = PREDICTION_DF.protein.unique()
         params = []
         self.tell('gathering parameters for parallel pool')
         if self.__verbose__:
