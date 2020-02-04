@@ -35,7 +35,7 @@ def compute_ortholog(fasta, db, string_fasta, string_db, out, out_dir):
     outfile = os.path.join(out_dir, out)
     if not os.path.exists(outfile):
         blast_command = 'blastp -query {fasta} -db {blastdb} -out {out}' +\
-                        '-outfmt "6 std qlen" -max_target_seqs 1'
+                        ' -outfmt "6 std qlen" -max_target_seqs 1'
 
         # create temporary blast files
         out_1 = os.path.join(out_dir, out + 'forward')

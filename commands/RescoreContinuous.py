@@ -1,5 +1,5 @@
 from GOTool import GeneOntology
-from Utils import FancyApp
+from Utils import FancyApp, ProgressBar
 import pandas as pd
 import numpy as np
 import os
@@ -19,11 +19,11 @@ class RescoreContinuous(FancyApp.FancyApp):
         term_cache = set()
         for go_term in df.go_term.unique():
             term = self.go.find_term(go_term)
-            score = df[df.go_term == go_term]['score']
+            score = df[df.go_term == go_term]['score'][0]
             children = term.get_children()
             keep = True
             for c in children:
-                c_score = df[df.go_term == c.name]['score']
+                c_score = df[df.go_term == c.name]['score'][0]
                 if c_score <= score + th:
                     keep = False
                     break
@@ -39,18 +39,18 @@ class RescoreContinuous(FancyApp.FancyApp):
         self.go = GeneOntology.GeneOntology(self.obo, verbose=True)
         self.go.build_structure()
         self.tell('Loading prediction file...')
-        prediction_df = pd.read_csv(self.prediction, header=None, sep='\t'
+        prediction_df = pd.read_csv(self.prediction, header=None, sep='\t',
                                     names=['protein', 'go_term', 'score'],
                                     dtype={'protein':str, 'go_term':str, 'score':np.float32})
         filtered_df = None
-        proteins = prediction_df.proteins.unique()
+        proteins = prediction_df.protein.unique()
         if self.__verbose__:
             prog = ProgressBar.ProgressBar(0, len(proteins), 77, mode='dynamic', char='-')
         for protein in proteins:
             predictions = prediction_df[prediction_df.protein == protein]
             th = self.th_start
             while len(predictions) > 1500:
-                predictions = self.filter_predictions(predictions, th)
+                predictions = self.filter_predictions(predictions, th, protein)
             if filtered_df is None:
                 filtered_df = predictions
             else:

@@ -1,3 +1,9 @@
+# Ignore temp dirs
+tmp/
+temp/
+# Ignore most bash scripts
+*.sh
+
 # Ignore Example data from GOTool
 GOTool/example data/
 test.*
