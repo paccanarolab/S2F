@@ -90,7 +90,7 @@ class RescoreContinuous(FancyApp.FancyApp):
             prog.finish_bar()
         self.tell(f'Filtering DataFrames using {self.cpu} cores')
         with Pool(self.cpu) as p:
-            p.starmap(params, filter_predictions_worker)
+            p.starmap(filter_predictions_worker, params)
         
         outfile = os.join(self.outdir, os.path.basename(self.prediction) + '_filtered')
         self.tell('Saving prediction to file...')
