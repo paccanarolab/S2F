@@ -15,14 +15,20 @@ class RescoreContinuous(FancyApp.FancyApp):
         self.go = None
 
     def filter_predictions(self, df, th, protein):
+        df.to_csv('test.df', sep='\t', header=None)
         data = {'protein':[], 'go_term':[], 'score':[]}
         term_cache = set()
         for go_term in df.go_term.unique():
             term = self.go.find_term(go_term)
+            print(go_term)
             score = df[df.go_term == go_term]['score'][0]
+            print(score)
             children = term.get_children()
             keep = True
             for c in children:
+                if len(df[df.go_term == c.name]) < 1:
+                    continue
+                print('c_name', df[df.go_term == c.name])
                 c_score = df[df.go_term == c.name]['score'][0]
                 if c_score <= score + th:
                     keep = False
