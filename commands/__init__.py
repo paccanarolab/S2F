@@ -46,7 +46,7 @@ def build_clamp(args):
     b.run()
 
 
-def rescore_continuous(args)
+def rescore_continuous(args):
     from commands.RescoreContinuous import RescoreContinuous
     r = RescoreContinuous()
     r.run()
