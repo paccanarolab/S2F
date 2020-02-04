@@ -1,8 +1,12 @@
 from GOTool import GeneOntology
 from Utils import FancyApp, ProgressBar
+from multiprocessing import Pool
+
 import pandas as pd
 import numpy as np
 import os
+
+def filter_predictions_worker(df, th, protein):
 
 class RescoreContinuous(FancyApp.FancyApp):
 
@@ -13,6 +17,7 @@ class RescoreContinuous(FancyApp.FancyApp):
         self.outdir = os.path.expanduser(args.outdir)
         self.th_start = args.th_start
         self.go = None
+        self.cpu = len(os.sched_getaffinity(0))
 
     def filter_predictions(self, df, th, protein):
         df.to_csv('test.df', sep='\t', header=None)
@@ -47,22 +52,22 @@ class RescoreContinuous(FancyApp.FancyApp):
                                     dtype={'protein':str, 'go_term':str, 'score':np.float32})
         filtered_df = None
         proteins = prediction_df.protein.unique()
+        params = []
+        self.tell('gathering parameters for parallel pool')
         if self.__verbose__:
             prog = ProgressBar.ProgressBar(0, len(proteins), 77, mode='dynamic', char='-')
         for protein in proteins:
-            predictions = prediction_df[prediction_df.protein == protein]
+            predictions = prediction_df[prediction_df.protein == protein]['go_term', 'score']
             th = self.th_start
-            while len(predictions) > 1500:
-                predictions = self.filter_predictions(predictions, th, protein)
-            if filtered_df is None:
-                filtered_df = predictions
-            else:
-                filtered_df = filtered_df.append(predictions, ignore_index=True)
+            params.append([predictions, th, protein])
             if self.__verbose__:
                 prog.increment_amount()
                 prog.print_bar()
         if self.__verbose__:
             prog.finish_bar()
+        self.tell(f'Filtering DataFrames using {self.cpu} cores')
+        with Pool(self.cpu) as p:
+            p.starmap(params)
         
         outfile = os.join(self.outdir, os.path.basename(self.prediction) + '_filtered')
         self.tell('Saving prediction to file...')
