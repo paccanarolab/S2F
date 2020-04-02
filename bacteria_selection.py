@@ -128,7 +128,7 @@ else:
     selection_count_df = pd.DataFrame(data)
     selection_count_df.to_pickle(DATA_DIRECTORY+'selection_count_df.pkl')
 
-pickle.dump(data, os.path.join(DATA_DIRECTORY,'data.pkl'))
+pickle.dump(data, open(os.path.join(DATA_DIRECTORY,'data.pkl'), 'wb'))
 selection_df = bacteria_df.merge(selection_count_df, left_on='Tax ID', right_on='Tax ID')
 
 ontology_tau = 8
