@@ -17,6 +17,7 @@ else:
     #proteomes_df.columns = proteomes_df.iloc[0]
     proteomes_df = proteomes_df.reindex(proteomes_df.index.drop(0),)
     proteomes_df.to_pickle(DATA_DIRECTORY+'proteomes_df.pkl')
+    proteomes_df['Tax ID'] = proteomes_df['Tax ID'].astype('str')
     
 if os.path.exists(DATA_DIRECTORY+'taxonomy_df.pkl'):
     taxonomy_df = pd.read_pickle(DATA_DIRECTORY+'taxonomy_df.pkl')
