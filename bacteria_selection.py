@@ -6,7 +6,7 @@ import requests
 from GOTool.GeneOntology import GeneOntology
 import pickle
 
-DATA_DIRECTORY = '../../data/bacteria_selection/'
+DATA_DIRECTORY = '../../../data/bacteria_selection/'
 GOA_DIRECTORY = DATA_DIRECTORY + 'selection_goa/'
 if os.path.exists(DATA_DIRECTORY+'proteomes_df.pkl'):
     proteomes_df = pd.read_pickle(DATA_DIRECTORY+'proteomes_df.pkl')
@@ -22,7 +22,7 @@ if os.path.exists(DATA_DIRECTORY+'taxonomy_df.pkl'):
     taxonomy_df = pd.read_pickle(DATA_DIRECTORY+'taxonomy_df.pkl')
 else:
     taxonomy_df = pd.read_csv(DATA_DIRECTORY+'proteomes-all.tab', sep='\t') # this is a tab separated file that has to be downloaded from http://www.uniprot.org/proteomes/
-    taxonomy_df.drop(columns=['Proteome ID', 'Protein count', 'Organism'], inplace=True)
+    taxonomy_df.drop(columns=['Proteome ID', 'Organism'], inplace=True)
     taxonomy_df.drop_duplicates(inplace=True)
     taxonomy_df['Organism ID'] = taxonomy_df['Organism ID'].astype('str')
     taxonomy_df.to_pickle(DATA_DIRECTORY+'taxonomy_df.pkl')
