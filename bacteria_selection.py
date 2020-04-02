@@ -12,6 +12,7 @@ if os.path.exists(DATA_DIRECTORY+'proteomes_df.pkl'):
     proteomes_df = pd.read_pickle(DATA_DIRECTORY+'proteomes_df.pkl')
 else:
     url = 'https://www.ebi.ac.uk/GOA/proteomes'
+    url = 'https://www.ebi.ac.uk/inc/drupal/goa/proteomes_release.html'
     proteomes_df = pd.read_html(url)[0]
     proteomes_df.columns = proteomes_df.iloc[0]
     proteomes_df = proteomes_df.reindex(proteomes_df.index.drop(0),)
