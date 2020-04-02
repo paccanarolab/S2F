@@ -44,7 +44,7 @@ not_found = []
 for f in proteomes_df[proteomes_df['Superkingdom'] == 'Bacteria']['File']:
     if not os.path.isfile(GOA_DIRECTORY+f):
         url = 'ftp://ftp.ebi.ac.uk/pub/databases/GO/goa/proteomes/{file}'.format(file=f)
-        command = 'wget -P '+GOA_DIRECTORY+' '+ url
+        command = 'wget -P '+GOA_DIRECTORY+' "'+ url + '"'
         not_found.append(command)
     else:
         found += 1
@@ -58,7 +58,7 @@ for command in not_found:
 
 # ftp://ftp.ebi.ac.uk/pub/databases/GO/goa/proteomes/4116045.A_yellow_vein_Taiwan_virus-[Taiwan].goa
 for f in proteomes_df[(proteomes_df['File'].isin([a.split('/')[-1] for a in not_found])) & (proteomes_df['Superkingdom']=='Bacteria')]['File']:
-    print("wget 'ftp://ftp.ebi.ac.uk/pub/databases/GO/goa/proteomes/"+ f + "'")
+    print('wget "ftp://ftp.ebi.ac.uk/pub/databases/GO/goa/proteomes/'+ f + '"')
 
 
 bacteria_df.head()
@@ -93,8 +93,8 @@ else:
         annotations_by_domain = {'biological_process': set(), 'cellular_component': set(), 'molecular_function': set()}
         terms_by_domain = {'biological_process': set(), 'cellular_component': set(), 'molecular_function': set()}
         for t in annotated_terms:
-            annotated_genes |= t.annotations[org]
-            annotations_by_domain[t.domain] |= t.annotations[org]
+            annotated_genes |= set(t.annotations[org].keys())
+            annotations_by_domain[t.domain] |= set(t.annotations[org].keys())
             terms_by_domain[t.domain].add(t)
 
         # terms annotated with 3 genes or more
@@ -106,7 +106,7 @@ else:
                                    'molecular_function': set()}
         for t in popular_terms:
             popular_genes |= t.annotations[org]
-            popular_by_domain[t.domain] |= t.annotations[org]
+            popular_by_domain[t.domain] |= set(t.annotations[org].keys())
             popular_terms_by_domain[t.domain].add(t)
 
         d['exp annotations'] = len(annotated_genes)
