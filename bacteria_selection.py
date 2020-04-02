@@ -81,7 +81,7 @@ else:
         annotated_terms = [t for t in go.terms.values() if organism['Organism'] in t.annotations]
         annotated_genes = set()
         for t in annotated_terms:
-            annotated_genes |= t.annotations[organism['Organism']]
+            annotated_genes |= set(t.annotations[organism['Organism']].keys())
 
         d['Tax ID'] = organism['Tax ID']
         d['all genes'] = len(annotated_genes)
