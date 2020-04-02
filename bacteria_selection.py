@@ -105,7 +105,7 @@ else:
         popular_terms_by_domain = {'biological_process': set(), 'cellular_component': set(),
                                    'molecular_function': set()}
         for t in popular_terms:
-            popular_genes |= t.annotations[org]
+            popular_genes |= set(t.annotations[org].keys())
             popular_by_domain[t.domain] |= set(t.annotations[org].keys())
             popular_terms_by_domain[t.domain].add(t)
 
