@@ -52,12 +52,16 @@ if __name__ == '__main__':
                               ' therefore avoid its computation',
                          default='compute')
     predict.add_argument('--transfer-blacklist',
-                         help='a list of identifiers from which no' +
-                              ' transference will be done',
+                         help='path to a file that containes a list of ' +
+                              'identifiers from which no' +
+                              ' links will be transferred. The file should ' +
+                              'have one identifier per line',
                          default='')
     predict.add_argument('--hmmer-blacklist',
-                         help='a list of identifiers that will be ignored ' +
-                              'from the HMMer result list',
+                         help='path to a file that contains a list of '
+                              'identifiers that will be ignored ' +
+                              'from the HMMer result list. The file should ' +
+                              'have one identifier per line',
                          default='compute')
     predict.add_argument('--graph-collection',
                          help='provide a STRING graph collection manually ' +

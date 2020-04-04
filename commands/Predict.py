@@ -297,7 +297,7 @@ class Predict(FancyApp.FancyApp):
             self.tell('Building HMMer seed file')
             hmmer_seed = hmmer.HMMerSeed(self.hmmer_output, self.proteins,
                                          self.terms, self.go,
-                                         self.hmmer_blacklist,
+                                         self.get_hmmer_blacklist(self.hmmer_blacklist),
                                          self.filtered_goa)
             hmmer_seed.process_output(evalue_file=evalue_file)
             seed = hmmer_seed.get_seed()
@@ -306,6 +306,9 @@ class Predict(FancyApp.FancyApp):
             self.tell('HMMer seed file found, skipping computation...')
             seed = sparse.load_npz(seed_file)
         return seed
+
+    def get_hmmer_blacklist(self):
+        return pd.read_csv(self.hmmer_blacklist, header=None, names=['tax_id']).tax_id.astype('str').tolist()
 
     def run_graph_collection(self):
         string_dir = os.path.join(self.installation_directory,
@@ -318,9 +321,13 @@ class Predict(FancyApp.FancyApp):
                                     self.string_links, core_ids,
                                     self.output_dir, orthologs_dir, graphs_dir,
                                     self.alias, self.cpu,
-                                    self.transfer_blacklist, 1e-6, 80.0, 60.0)
+                                    self.get_transfer_blacklist(self.transfer_blacklist), 
+                                    1e-6, 80.0, 60.0)
         col.compute_graph()
         return col.get_graph()
+
+    def get_transfer_blacklist(self):
+        return pd.read_csv(self.transfer_blacklist, header=None, names=['tax_id']).tax_id.astype('str').tolist()
 
     def run_graph_homology(self):
         graphs_dir = os.path.join(self.installation_directory,
