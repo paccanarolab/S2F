@@ -297,7 +297,7 @@ class Predict(FancyApp.FancyApp):
             self.tell('Building HMMer seed file')
             hmmer_seed = hmmer.HMMerSeed(self.hmmer_output, self.proteins,
                                          self.terms, self.go,
-                                         self.get_hmmer_blacklist(self.hmmer_blacklist),
+                                         self.get_hmmer_blacklist(),
                                          self.filtered_goa)
             hmmer_seed.process_output(evalue_file=evalue_file)
             seed = hmmer_seed.get_seed()
@@ -321,7 +321,7 @@ class Predict(FancyApp.FancyApp):
                                     self.string_links, core_ids,
                                     self.output_dir, orthologs_dir, graphs_dir,
                                     self.alias, self.cpu,
-                                    self.get_transfer_blacklist(self.transfer_blacklist), 
+                                    self.get_transfer_blacklist(), 
                                     1e-6, 80.0, 60.0)
         col.compute_graph()
         return col.get_graph()
