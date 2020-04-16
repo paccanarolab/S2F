@@ -278,29 +278,42 @@ if __name__ == '__main__':
 
     build_goa_clamp = subparsers.add_parser(
         'build-clamp',
-        description='S2F build-clamp: given a fasta file, extracts all the GO annotations from the UniProtKB that'
-                    'use the provided evidence codes. This command will fail if run previously to a full S2F '
-                    'installation using the `Install` command',
+        description='S2F build-clamp: given a fasta file, extracts all the GO '
+                    'annotations from the UniProtKB that use the provided '
+                    'evidence codes. This command will fail if run previously '
+                    'to a full S2F  installation using the `Install` command',
         help='build-clamp command'
     )
     build_goa_clamp.set_defaults(func=commands.build_clamp)
     build_goa_clamp.add_argument('--evidence-codes',
-                                 help='manually provide a list of evidence codes that will be used to filter the '
-                                      'UniProt GOA. If not provided, S2F will use experimental evidence codes.',
+                                 help='manually provide a list of evidence '
+                                      'codes that will be used to filter the '
+                                      'UniProt GOA. If not provided, S2F will '
+                                      'use experimental evidence codes.',
                                  default='experimental')
-    build_goa_clamp.add_argument('--fasta', help='Path to the organism fasta', required=True)
+    build_goa_clamp.add_argument('--fasta',
+                                 help='Path to the organism fasta',
+                                 required=True)
     build_goa_clamp.add_argument('--output',
-                                 help='Path to desired output file. The fasta filename with an added `.clamp` extension'
-                                      'will be created by S2F by default.', default='infer')
+                                 help='Path to desired output file. The fasta '
+                                      'filename with an added `.clamp` '
+                                      'extension will be created by S2F by '
+                                      'default.',
+                                 default='infer')
     build_goa_clamp.add_argument('--config-file',
-                                 help='location of the installation configuration file that will be loaded. If not '
-                                      'provided, the default configuration file will be loaded',
-                                 default=os.path.join(os.path.dirname(os.path.abspath(__file__)), 's2f.conf'))
-
+                                 help='location of the installation '
+                                      'configuration file that will be loaded.'
+                                      ' If not provided, the default '
+                                      'configuration file will be loaded',
+                                 default=os.path.join(
+                                      os.path.dirname(
+                                           os.path.abspath(__file__)),
+                                           's2f.conf'))
 
     rescore_continuous = subparsers.add_parser(
         'rescore-continuous',
-        description='S2F continuous re-scoring: Re-scores the output of S2F to meet the CAFA challenge conditions.',
+        description='S2F continuous re-scoring: Re-scores the output of S2F to'
+                    ' meet the CAFA challenge conditions.',
         help='rescore-continuous command'
     )
     rescore_continuous.set_defaults(func=commands.rescore_continuous)
@@ -308,12 +321,29 @@ if __name__ == '__main__':
                                     help='Path to obo file (text version)',
                                     required=True)
     rescore_continuous.add_argument('--prediction',
-                                    help='Path to prediction file (text version)',
+                                    help='Path to prediction file '
+                                         '(text version)',
                                     required=True)
     rescore_continuous.add_argument('--th-start', type=float,
                                     help='Initial threshold')
-    rescore_continuous.add_argument('--outdir', 
+    rescore_continuous.add_argument('--outdir',
                                     help='output_directory')
+    
+    extract_seeds = subparsers.add_parser(
+        'extract-seeds',
+        description='Extract seeds from a finished prediciton into text files',
+        help='extract-seeds command'
+    )
+    extract_seeds.set_defaults(func=commands.extract_seeds)
+    extract_seeds.add_argument('--prediction-directory',
+                               help='Path to a prediction directory, these are'
+                                    ' located under the `output` folder in a '
+                                    'regular installation',
+                               required=True)
+    extract_seeds.add_argument('--alias',
+                               help='The alias that was used with the '
+                                    'corresponidng prediction directory',
+                               required=True)
 
     args = parser.parse_args()
     if args.subcommand == 'predict':

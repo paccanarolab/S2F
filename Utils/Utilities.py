@@ -6,6 +6,7 @@ import scipy
 import subprocess
 import os
 
+
 def all_indices(value, qlist):
     indices = []
     idx = -1
@@ -120,13 +121,14 @@ def extract_indices_from_fasta(fasta, processing_func=keep_entire_prot_id):
 
 def line_count(filename):
     if os.name == 'nt':  # windows
-        # apparently the best way to count lines in windows: https://superuser.com/a/959037/1105734
+        # apparently the best way to count lines in
+        # windows: https://superuser.com/a/959037/1105734
         out = subprocess.check_output(r'find /c /v "" {f}'.format(f=filename))
         return int(out.split(b' ')[-1])
     else:  # unix
-        # taken from https://gist.github.com/zed/0ac760859e614cd03652#file-gistfile1-py-L41
+        # taken from
+        # https://gist.github.com/zed/0ac760859e614cd03652#file-gistfile1-py-L41
         out = subprocess.Popen(['wc', '-l', filename],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT).communicate()[0]
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.STDOUT).communicate()[0]
         return int(out.partition(b' ')[0])
-

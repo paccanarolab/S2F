@@ -50,3 +50,9 @@ def rescore_continuous(args):
     from commands.RescoreContinuous import RescoreContinuous
     r = RescoreContinuous(args)
     r.run()
+
+
+def extract_seeds(args):
+    from commands.ExtractSeeds import ExtractSeeds
+    e = ExtractSeeds(args)
+    e.run()

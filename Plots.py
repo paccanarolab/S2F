@@ -2,32 +2,38 @@ from Measures import BuildMatrices, measures
 from Utils import FancyApp, ColourClass
 
 from collections import defaultdict
-
+import seaborn as sns
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
 import argparse
 import os
-import re
 import matplotlib
 matplotlib.use('Agg')
-import seaborn as sns
-import matplotlib.pyplot as plt
 # from Utils.notification import load_configuration, get_api
 
 
 def tell(*args, **kwargs):
-    FancyApp.FancyApp.yell(ColourClass.bcolors.BOLD_GREEN, 'plotter', *args, **kwargs)
+    FancyApp.FancyApp.yell(
+        ColourClass.bcolors.BOLD_GREEN, 'plotter', *args, **kwargs)
 
 
 aparser = argparse.ArgumentParser()
 required_arguments = aparser.add_argument_group('required arguments')
 required_arguments.add_argument('--outputs-dir', '--od',
-                                help='tsv that links tax ids to output folders, not the full path'
-                                     'but only the name of the containig directory to avoid confussion', required=True)
+                                help='tsv that links tax ids to output '
+                                     'folders, not the full path but only the'
+                                     ' name of the containig directory to '
+                                     'avoid confussion', required=True)
+required_arguments.add_argument('--bacteria-selection', '--bf',
+                                help='pickle file that contains the informtion'
+                                     ' on the selected bacteria',
+                                required=True)
 required_arguments.add_argument('--cm-diffusion-dir', '--cm',
-                                help='directory containing the results computed by the '
-                                     'consistency method diffusion', required=True)
+                                help='directory containing the results '
+                                     'computed by the consistency method'
+                                     ' diffusion', required=True)
 required_arguments.add_argument('--plot-individual', action='store_true')
 required_arguments.add_argument('--compute-metrics', action='store_true')
 
@@ -38,7 +44,8 @@ output_dirs = pd.read_csv(args.outputs_dir, sep='\t',
                           names=['Tax ID', 'output'],
                           dtype={'Tax ID': 'str', 'output': 'str'})
 
-# This is a hack, and should really be an argument. This is a plot generation script though, so no much thought into it.
+# This is a hack, and should really be an argument. This is a plot generation
+# script though, so no much thought into it.
 if os.name == 'nt':
     dataroot = r'A:\COMMON\PROJECTS\S2F\data'
 else:
@@ -83,8 +90,10 @@ unsafe_metrics = ['s', 'ru', 'mi', 'roc', 'pr']
 
 condition = final_selection['Tax ID'].isin(output_dirs['Tax ID'])
 
-for i, organism in final_selection[condition].sort_values(by='Tax ID').iterrows():
-    tell('processing organism: ', organism['Organism'], '(', organism['Tax ID'], ')...')
+for i, organism in final_selection[condition].sort_values(
+                                                by='Tax ID').iterrows():
+    tell('processing organism: ', organism['Organism'], 
+         '(', organism['Tax ID'], ')...')
     if organism['Tax ID'] in ['1392', '243277', '272942']:  # we exclude this organism because it has too many proteins for us to run it
         tell('skipping due to unfinished computation')
         continue
