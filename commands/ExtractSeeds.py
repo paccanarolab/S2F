@@ -37,6 +37,6 @@ class ExtractSeeds(FancyApp.FancyApp):
         self.tell('saving text version of hmmer seed')
         Diffusion._write_results(hmmer, proteins, terms,
                                  os.path.join(self.prediction_directory,
-                                              '../../seeds/interpro',
+                                              '../../seeds/hmmer',
                                               f'{self.alias}.seed.txt'))
         self.tell('done')
