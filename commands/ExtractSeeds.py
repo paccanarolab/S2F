@@ -10,7 +10,7 @@ class ExtractSeeds(FancyApp.FancyApp):
     def __init__(self, args):
         super(ExtractSeeds, self).__init__()
         self.prediction_directory = args.prediction_directory
-        self.alias = self.alias
+        self.alias = args.alias
 
     def run(self):
         self.tell('Reading proteins index')
