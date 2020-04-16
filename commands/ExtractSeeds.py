@@ -21,20 +21,20 @@ class ExtractSeeds(FancyApp.FancyApp):
                                             'terms.df'))
         self.tell('Loading interpro seed file')
         interpro = sparse.load_npz(os.path.join(self.prediction_directory,
-                                                '../../../seeds/interpro',
+                                                '../../seeds/interpro',
                                                 f'{self.alias}.npz'))
         self.tell('Loading hmmer seed file')
         hmmer = sparse.load_npz(os.path.join(self.prediction_directory,
-                                             '../../../seeds/hmmer',
+                                             '../../seeds/hmmer',
                                              f'{self.alias}.npz'))
         self.tell('saving text version of interpro seed')
         Diffusion._write_results(interpro, proteins, terms,
                                  os.path.join(self.prediction_directory,
-                                              '../../../seeds/interpro',
+                                              '../../seeds/interpro',
                                               f'{self.alias}.seed.txt'))
         self.tell('saving text version of hmmer seed')
         Diffusion._write_results(hmmer, proteins, terms,
                                  os.path.join(self.prediction_directory,
-                                              '../../../seeds/interpro',
+                                              '../../seeds/interpro',
                                               f'{self.alias}.seed.txt'))
         self.tell('done')
