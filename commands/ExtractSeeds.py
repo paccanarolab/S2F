@@ -23,10 +23,12 @@ class ExtractSeeds(FancyApp.FancyApp):
         interpro = sparse.load_npz(os.path.join(self.prediction_directory,
                                                 '../../seeds/interpro',
                                                 f'{self.alias}.seed.npz'))
+        interpro = interpro.tocoo()
         self.tell('Loading hmmer seed file')
         hmmer = sparse.load_npz(os.path.join(self.prediction_directory,
                                              '../../seeds/hmmer',
                                              f'{self.alias}.seed.npz'))
+        hmmer = hmmer.tocoo()
         self.tell('saving text version of interpro seed')
         Diffusion._write_results(interpro, proteins, terms,
                                  os.path.join(self.prediction_directory,
