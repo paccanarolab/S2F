@@ -72,7 +72,8 @@ class Diffuse(FancyApp.FancyApp):
         self.graph = self.graph.tolil()
         self.graph.setdiag(0)  # avoid self-loops
         self.graph = self.graph.tocsc()
-        sparse.save_npz(self.output + 'DEBUG')
+        a = os.path.basename(self.graph_file)
+        sparse.save_npz(self.graph, self.output + a + '-DEBUG')
         self.tell('Graph dimensions:', self.graph.shape)
 
     def read_labelling(self):
@@ -95,3 +96,6 @@ class Diffuse(FancyApp.FancyApp):
                                                   len(self.terms)))
         self.tell('Labelling dimensions:', self.labelling.shape)
         sparse.save_npz(self.labelling + 'DEBUG')
+        a = os.path.basename(self.labelling_file)
+        sparse.save_npz(self.labelling, self.output + a + '-DEBUG')
+
