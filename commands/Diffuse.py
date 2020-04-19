@@ -25,8 +25,7 @@ class Diffuse(FancyApp.FancyApp):
         self.labelling = None
         self.fasta = args.fasta
         self.output = args.output
-        self.proteins = Utilities.extract_indices_from_fasta(
-                                self.fasta, Utilities.keep_uniprot_accession)
+        self.proteins = Utilities.extract_indices_from_fasta(self.fasta)
         self.terms = None
 
     def run(self):
