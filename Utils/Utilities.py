@@ -117,7 +117,7 @@ def extract_indices_from_fasta(fasta, processing_func=keep_entire_prot_id):
     proteins_df.columns = ['protein idx', 'protein id']
     proteins_df.set_index('protein id', inplace=True)
     return proteins_df
-
+    
 
 def line_count(filename):
     if os.name == 'nt':  # windows

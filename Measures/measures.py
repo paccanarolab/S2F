@@ -82,7 +82,7 @@ class HX_py(S2FMeasure):
         keys = genewise[0].keys()
         result = {}
         valid_keys = [k for k in keys if k not in
-                      ['s', 'ru', 'mi', 'roc', 'pr']]
+                      ['s', 'ru', 'mi', 'roc', 'pr', 'tp', 'fp', 'tn', 'fn']]
         for k in valid_keys:
             result[k+' per-gene'] = np.mean([g[k] for g in genewise])
             result[k+' per-gene raw'] = np.array([g[k] for g in genewise])
@@ -113,7 +113,7 @@ class HX_py(S2FMeasure):
         keys = termwise[0].keys()
         result = {}
         valid_keys = [k for k in keys if k not in
-                      ['s', 'ru', 'mi', 'roc', 'pr']]
+                      ['s', 'ru', 'mi', 'roc', 'pr', 'tp', 'fp', 'tn', 'fn']]
         for k in valid_keys:
             result[k + ' per-term'] = np.mean([g[k] for g in termwise])
             result[k + ' per-term raw'] = np.array([g[k] for g in termwise])
@@ -207,7 +207,7 @@ class HX_py(S2FMeasure):
                                                                dat[:, 0],
                                                                pos_label=1.0)
 
-        # TN = qty_neg - FP
+        TN = qty_neg - FP
         FN = qty_pos - TP
 
         FPR = FP / qty_neg
@@ -240,11 +240,11 @@ class HX_py(S2FMeasure):
             'NDCG': ndcg,
             'Jaccard': jac,
             'roc': [FPR, TPR],
-            'pr': [rec, pre]
-            # 'tp': TP,
-            # 'fp': FP,
-            # 'tn': TN,
-            # 'fn': FN,
+            'pr': [rec, pre],
+            'tp': TP,
+            'fp': FP,
+            'tn': TN,
+            'fn': FN,
         }
 
     def setParameters(self, **kwargs):
