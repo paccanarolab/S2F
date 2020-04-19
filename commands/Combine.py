@@ -45,15 +45,21 @@ class Combine(FancyApp.FancyApp):
         self.tell('done')
 
     def read_graph_collection(self):
-        # 1. read collection file
-        collection_df = pd.read_csv(self.collection_file,
-                                    sep=self.collection_sep)
-        cols = collection_df.columns
+        # this is the old format
+        if self.collection_sep != 'pickle':
+            # 1. read collection file
+            collection_df = pd.read_csv(self.collection_file,
+                                        sep=self.collection_sep)
+            cols = collection_df.columns
 
-        # 2. manually set score columns to float
-        collection_df[cols[2:]] = collection_df[cols[2:]].astype('float32')
-
-        # 3. we guarantee the lexicographical order between the protein columns
+            # 2. manually set score columns to float
+            collection_df[cols[2:]] = collection_df[cols[2:]].astype('float32')
+        else:
+            cols = ['query1', 'query2']
+            collection_df = pd.read_pickle(self.collection_file)
+            
+        # 3. we guarantee the lexicographical order between
+        # the protein columns
         Graph.assert_lexicographical_order(collection_df,
                                            p1=cols[0],
                                            p2=cols[1])
