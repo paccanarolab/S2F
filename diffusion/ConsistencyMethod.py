@@ -100,18 +100,18 @@ class ConsistencyMethod(Diffusion):
             self.tell('Diffusion Kernel computation started...')
             # build D
             n = self.graph.shape[0]
-            # sums = self.graph.sum(1)  # sum every column per row
+            sums = self.graph.sum(1)  # sum every column per row
             # in case there are unconnected parts in the matrix
-            # indNonZeros = np.where(sums != 0)
-            # diagonalValues = np.zeros(sums.shape)
+            indNonZeros = np.where(sums != 0)
+            diagonalValues = np.zeros(sums.shape)
 
-            degree = 1/np.sqrt(self.graph.sum(axis=1))
-            D = sparse.spdiags(degree.T, 0, n, n)
+            # degree = 1/np.sqrt(self.graph.sum(axis=1))
+            # D = sparse.spdiags(degree.T, 0, n, n)
 
-            # diagonalValues[indNonZeros] = 1.0 / np.sqrt(sums[indNonZeros])
-            # D = sparse.spdiags(diagonalValues.T, 0,
-            #                    diagonalValues.shape[0],
-            #                    diagonalValues.shape[0])
+            diagonalValues[indNonZeros] = 1.0 / np.sqrt(sums[indNonZeros])
+            D = sparse.spdiags(diagonalValues.T, 0,
+                               diagonalValues.shape[0],
+                               diagonalValues.shape[0])
             # build S
             S = D * self.graph * D
 
