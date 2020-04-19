@@ -72,6 +72,7 @@ class Diffuse(FancyApp.FancyApp):
         self.graph = self.graph.tolil()
         self.graph.setdiag(0)  # avoid self-loops
         self.graph = self.graph.tocsc()
+        sparse.save_npz(self.output + 'DEBUG')
         self.tell('Graph dimensions:', self.graph.shape)
 
     def read_labelling(self):
@@ -93,3 +94,4 @@ class Diffuse(FancyApp.FancyApp):
                                            shape=(len(self.proteins),
                                                   len(self.terms)))
         self.tell('Labelling dimensions:', self.labelling.shape)
+        sparse.save_npz(self.labelling + 'DEBUG')

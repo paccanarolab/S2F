@@ -190,7 +190,9 @@ class Predict(FancyApp.FancyApp):
             hmmer_diff = sparse.load_npz(hmmer_diff_file + '.npz')
         else:
             kernel_params = {'lambda': 0.1}
-            diff = S2FLabelPropagation(combined_graph, self.proteins, self.terms)
+            diff = S2FLabelPropagation(combined_graph,
+                                       self.proteins,
+                                       self.terms)
             diff.compute_kernel(**kernel_params)
             # 9. diffuse interpro
             self.tell('Diffusing InterPro seed')
@@ -308,7 +310,11 @@ class Predict(FancyApp.FancyApp):
         return seed
 
     def get_hmmer_blacklist(self):
-        return pd.read_csv(self.hmmer_blacklist, header=None, names=['tax_id']).tax_id.astype('str').tolist()
+        return pd.read_csv(
+            self.hmmer_blacklist,
+            header=None,
+            names=['tax_id']
+        ).tax_id.astype('str').tolist()
 
     def run_graph_collection(self):
         string_dir = os.path.join(self.installation_directory,
@@ -321,13 +327,17 @@ class Predict(FancyApp.FancyApp):
                                     self.string_links, core_ids,
                                     self.output_dir, orthologs_dir, graphs_dir,
                                     self.alias, self.cpu,
-                                    self.get_transfer_blacklist(), 
+                                    self.get_transfer_blacklist(),
                                     1e-6, 80.0, 60.0)
         col.compute_graph()
         return col.get_graph()
 
     def get_transfer_blacklist(self):
-        return pd.read_csv(self.transfer_blacklist, header=None, names=['tax_id']).tax_id.astype('str').tolist()
+        return pd.read_csv(
+            self.transfer_blacklist,
+            header=None,
+            names=['tax_id']
+        ).tax_id.astype('str').tolist()
 
     def run_graph_homology(self):
         graphs_dir = os.path.join(self.installation_directory,
@@ -345,8 +355,12 @@ class Predict(FancyApp.FancyApp):
         self.go.up_propagate_annotations('clamp')
         self.tell('Building clamp matrix...')
         clamp_df = self.go.get_annotations('clamp')
-        clamp_df = clamp_df.merge(self.proteins, left_on='Protein', right_index=True)
-        clamp_df = clamp_df.merge(self.terms, left_on='GO ID', right_index=True)
+        clamp_df = clamp_df.merge(self.proteins,
+                                  left_on='Protein',
+                                  right_index=True)
+        clamp_df = clamp_df.merge(self.terms,
+                                  left_on='GO ID',
+                                  right_index=True)
 
         p_idx = clamp_df['protein idx'].values
         go_idx = clamp_df['term idx'].values
@@ -358,10 +372,12 @@ class Predict(FancyApp.FancyApp):
 
     def clamp(self, seeds):
         clamp_bigger = self.clamp_matrix > seeds
-        return seeds - seeds.multiply(clamp_bigger) + self.clamp_matrix.multiply(clamp_bigger)
+        return (seeds - seeds.multiply(clamp_bigger) +
+                self.clamp_matrix.multiply(clamp_bigger))
 
     def combine_graphs(self, graph_collection, graph_homology, ip_seed):
-        combined_graph_filename = os.path.join(self.combination_dir, self.alias)
+        combined_graph_filename = os.path.join(self.combination_dir,
+                                               self.alias)
         combined_graph_sparse_filename = combined_graph_filename + '.npz'
         if not os.path.exists(combined_graph_filename):
             comb = combination.Combination(self.proteins, graph_collection,
