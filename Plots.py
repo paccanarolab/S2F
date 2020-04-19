@@ -50,22 +50,6 @@ required_arguments.add_argument('--compute-metrics', action='store_true')
 
 args = aparser.parse_args()
 
-output_dirs = pd.read_csv(args.outputs_dir, sep='\t',
-                          names=['Tax ID', 'output'],
-                          dtype={'Tax ID': 'str', 'output': 'str'})
-
-# This is a hack, and should really be an argument. This is a plot generation
-# script though, so no much thought into it.
-if os.name == 'nt':
-    dataroot = r'A:\COMMON\PROJECTS\S2F\data'
-else:
-    dataroot = '/home/paccanaro/COMMON/PROJECTS/S2F/data/'
-
-if os.name == 'nt':
-    DATA_DIRECTORY = r'G:\PaccanaroLab\s2f\data\bacteria_selection/'
-else:
-    DATA_DIRECTORY = '../../../data/bacteria_selection/'
-
 obo = args.obo
 S2F_DIR = args.s2f_dir
 GOA_DIRECTORY = args.goa_directory
@@ -98,10 +82,7 @@ labels = [
 # we have these values per threshold, so they are unsafe for plotting
 unsafe_metrics = ['s', 'ru', 'mi', 'roc', 'pr']
 
-condition = final_selection['Tax ID'].isin(output_dirs['Tax ID'])
-
-for i, organism in final_selection[condition].sort_values(
-                                                by='Tax ID').iterrows():
+for i, organism in final_selection.sort_values(by='Tax ID').iterrows():
     tell('processing organism: ', organism['Organism'],
          '(', organism['Tax ID'], ')...')
 
