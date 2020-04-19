@@ -103,6 +103,9 @@ class Combine(FancyApp.FancyApp):
                                  shape=(len(self.proteins), len(t)))
 
     def read_homology_file(self):
+        if self.homology_file == '':
+            self.tell('No homology file provided, combinind only collection')
+            return None
         columns = ['protein1', 'protein2', 'score']
         types = dict([(x, 'float32') if "protein" not in x
                       else (x, "str") for x in columns])

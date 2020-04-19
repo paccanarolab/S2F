@@ -93,4 +93,3 @@ class Diffuse(FancyApp.FancyApp):
                                            shape=(len(self.proteins),
                                                   len(self.terms)))
         self.tell('Labelling dimensions:', self.labelling.shape)
-
