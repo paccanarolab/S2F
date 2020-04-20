@@ -270,10 +270,6 @@ if __name__ == '__main__':
     seed_from_interpro.add_argument('--obo',
                                     help='Path to obo file (text version)',
                                     required=True)
-    seed_from_interpro.add_argument('--threshold',
-                                    help='threshold value to use '
-                                         'to discard annotations',
-                                    default=1e-4, type=float)
     seed_from_interpro.add_argument('--output',
                                     help='Path to desired output file',
                                     required=True)

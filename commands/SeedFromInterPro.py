@@ -11,13 +11,12 @@ class SeedFromInterPro(FancyApp.FancyApp):
         self.obo = args.obo
         self.interpro_file = args.interpro_file
         self.output = args.output
-        self.threshold = args.threshold
 
     def run(self):
         self.tell('Building Gene Ontology')
         go = GeneOntology.GeneOntology(self.obo, verbose=True)
         go.build_structure()
-        terms = pd.DataFrame(list(enumerate(sorted(self.go.terms.keys()))))
+        terms = pd.DataFrame(list(enumerate(sorted(go.terms.keys()))))
         self.tell('Extracting protein set from InterPro file')
         proteins = set()
         with open(self.interpro_file) as ip_file:
