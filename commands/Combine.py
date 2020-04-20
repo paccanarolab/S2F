@@ -27,8 +27,7 @@ class Combine(FancyApp.FancyApp):
         self.homology = None
         self.seed = None
         self.combined = None
-        self.proteins = Utilities.extract_indices_from_fasta(
-                                self.fasta, Utilities.keep_uniprot_accession)
+        self.proteins = Utilities.extract_indices_from_fasta(self.fasta)
 
     def run(self):
         self.tell('parsing graph combination file...')

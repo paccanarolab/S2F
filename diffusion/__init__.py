@@ -1,7 +1,5 @@
 import abc
 
-import pandas as pd
-
 from Utils import FancyApp
 from seeds import Seed
 
@@ -12,8 +10,8 @@ class Diffusion(FancyApp.FancyApp):
 
     @staticmethod
     def _write_results(diffusion_matrix, proteins, terms, filename):
-        Seed._seed_to_pandas(diffusion_matrix, 
-                             proteins, 
+        Seed._seed_to_pandas(diffusion_matrix,
+                             proteins,
                              terms).to_csv(filename,
                                            sep='\t',
                                            index=False,
