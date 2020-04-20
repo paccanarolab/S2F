@@ -46,7 +46,6 @@ class Diffuse(FancyApp.FancyApp):
         if self.diffusion_method == 's2f':
             return S2FLabelPropagation
         elif self.diffusion_method == 'consistency-method':
-            self.fix_graph()
             return ConsistencyMethod
         elif self.diffusion_method == 'label-weighted':
             return LabelWeightedPropagation
@@ -81,6 +80,8 @@ class Diffuse(FancyApp.FancyApp):
         self.graph = self.graph.tolil()
         self.graph.setdiag(0)  # avoid self-loops
         self.graph = self.graph.tocsc()
+        if self.diffusion_method == 'consitency-method':
+            self.fix_graph()
         self.tell('Graph dimensions:', self.graph.shape)
         a = os.path.basename(self.graph_file)
         sparse.save_npz(self.output + a + '-DEBUG', self.graph)
