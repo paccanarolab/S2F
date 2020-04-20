@@ -56,9 +56,10 @@ class Diffuse(FancyApp.FancyApp):
 
     def fix_graph(self):
         # for the consitency method, we can't handle negative weights
-        m = (self.graph < 0).astype(int)
+        m = self.graph < 0
+        m = m.astype(int)
         m = m * -1
-        m[m==0] = 1
+        m[m == 0] = 1
         self.graph = self.graph.multiply(m)
 
     def read_graph(self):
