@@ -247,6 +247,7 @@ for i, organism in final_selection.sort_values(by='Tax ID').iterrows():
         if args.plot_individual:
             tell('Generating figures...')
             for metric in metrics_df['metric'].unique():
+                tell(f'metric: {metric}')
                 if metric in unsafe_metrics:
                     continue
                 plot_selection = metrics_df[metrics_df['metric'] == metric]
