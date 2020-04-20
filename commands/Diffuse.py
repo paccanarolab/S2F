@@ -46,12 +46,20 @@ class Diffuse(FancyApp.FancyApp):
         if self.diffusion_method == 's2f':
             return S2FLabelPropagation
         elif self.diffusion_method == 'consistency-method':
+            self.fix_graph()
             return ConsistencyMethod
         elif self.diffusion_method == 'label-weighted':
             return LabelWeightedPropagation
         raise ModuleNotFoundError("Could not find selected " +
                                   "propagation method " +
                                   self.diffusion_method)
+
+    def fix_graph(self):
+        # for the consitency method, we can't handle negative weights
+        m = (self.graph < 0).astype(int)
+        m = m * -1
+        m[m==0] = 1
+        self.graph = self.graph.multiply(m)
 
     def read_graph(self):
         graph_df = pd.read_csv(os.path.expanduser(self.graph_file),
