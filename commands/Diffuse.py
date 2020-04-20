@@ -27,6 +27,7 @@ class Diffuse(FancyApp.FancyApp):
         self.output = args.output
         self.proteins = Utilities.extract_indices_from_fasta(self.fasta)
         self.terms = None
+        self.fix = False
 
     def run(self):
         self.tell('Selecting', self.diffusion_method, 'as diffusion method')
@@ -46,6 +47,7 @@ class Diffuse(FancyApp.FancyApp):
         if self.diffusion_method == 's2f':
             return S2FLabelPropagation
         elif self.diffusion_method == 'consistency-method':
+            self.fix = True
             return ConsistencyMethod
         elif self.diffusion_method == 'label-weighted':
             return LabelWeightedPropagation
@@ -80,7 +82,7 @@ class Diffuse(FancyApp.FancyApp):
         self.graph = self.graph.tolil()
         self.graph.setdiag(0)  # avoid self-loops
         self.graph = self.graph.tocsc()
-        if self.diffusion_method == 'consistency-method':
+        if self.fix:
             self.fix_graph()
 
     def read_labelling(self):
