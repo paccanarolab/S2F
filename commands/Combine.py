@@ -57,7 +57,7 @@ class Combine(FancyApp.FancyApp):
         else:
             cols = ['query1', 'query2']
             collection_df = pd.read_pickle(self.collection_file)
-            
+
         # 3. we guarantee the lexicographical order between
         # the protein columns
         Graph.assert_lexicographical_order(collection_df,

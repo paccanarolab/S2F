@@ -34,6 +34,12 @@ def seed_from_hmmer(args):
     s.run()
 
 
+def seed_from_interpro(args):
+    from commands.SeedFromInterPro import SeedFromInterPro
+    s = SeedFromInterPro(args)
+    s.run()
+
+
 def combine_seeds(args):
     from commands.CombineSeeds import CombineSeeds
     c = CombineSeeds(args)

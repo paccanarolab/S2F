@@ -257,6 +257,27 @@ if __name__ == '__main__':
                                  help='Path to desired output file',
                                  required=True)
 
+    seed_from_interpro = subparsers.add_parser(
+        'interpro-seed',
+        description='S2F interpro-seed: manually feed ' +
+                    'an interpro file and get a seed back',
+        help='interpro-seed command'
+    )
+    seed_from_interpro.set_defaults(func=commands.seed_from_interpro)
+    seed_from_interpro.add_argument('--interpro-file',
+                                    help='Path to the interpro file',
+                                    required=True)
+    seed_from_interpro.add_argument('--obo',
+                                    help='Path to obo file (text version)',
+                                    required=True)
+    seed_from_interpro.add_argument('--threshold',
+                                    help='threshold value to use '
+                                         'to discard annotations',
+                                    default=1e-4, type=float)
+    seed_from_interpro.add_argument('--output',
+                                    help='Path to desired output file',
+                                    required=True)
+
     combine_seeds = subparsers.add_parser(
         'combine-seeds',
         description='Aggregates seed files using a linear combination',
@@ -328,7 +349,7 @@ if __name__ == '__main__':
                                     help='Initial threshold')
     rescore_continuous.add_argument('--outdir',
                                     help='output_directory')
-    
+
     extract_seeds = subparsers.add_parser(
         'extract-seeds',
         description='Extract seeds from a finished prediciton into text files',

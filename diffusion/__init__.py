@@ -3,6 +3,7 @@ import abc
 import pandas as pd
 
 from Utils import FancyApp
+from seeds import Seed
 
 
 class Diffusion(FancyApp.FancyApp):
@@ -11,22 +12,12 @@ class Diffusion(FancyApp.FancyApp):
 
     @staticmethod
     def _write_results(diffusion_matrix, proteins, terms, filename):
-        data = {
-            'protein': diffusion_matrix.row,
-            'goterm': diffusion_matrix.col,
-            'score': diffusion_matrix.data
-        }
-        labelling_df = pd.DataFrame(data)
-        labelling_df = labelling_df.merge(proteins.reset_index(),
-                                          left_on='protein',
-                                          right_on='protein idx')
-        labelling_df = labelling_df.merge(terms.reset_index(),
-                                          left_on='goterm',
-                                          right_on='term idx')
-        labelling_df[['protein id', 'term id', 'score']].to_csv(filename,
-                                                                sep='\t',
-                                                                index=False,
-                                                                header=None)
+        Seed._seed_to_pandas(diffusion_matrix, 
+                             proteins, 
+                             terms).to_csv(filename,
+                                           sep='\t',
+                                           index=False,
+                                           header=None)
 
     @abc.abstractmethod
     def write_results(self, filename):

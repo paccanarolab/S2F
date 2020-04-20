@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 from scipy import sparse
-
 from seeds import Seed
 from Utils import ColourClass
 
@@ -18,9 +17,15 @@ class InterProSeed(Seed):
         self.all_methods = None
         self.methods = []
 
-    def get_seed(self):
+    def get_seed(self, **kwargs):
+        return_pandas_assignment = kwargs.get('return_pandas_assignment',
+                                              False)
         self.tell('Combining', len(self.methods), 'models in InterPro')
-        return self.all_methods * (1.0/len(self.methods))
+        combined = self.all_methods * (1.0/len(self.methods))
+
+        if return_pandas_assignment:
+            return Seed._seed_to_pandas(combined, self.proteins, self.terms)
+        return combined
 
     def process_output(self, **kwargs):
         methods = {}
