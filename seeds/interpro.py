@@ -24,7 +24,9 @@ class InterProSeed(Seed):
         combined = self.all_methods * (1.0/len(self.methods))
 
         if return_pandas_assignment:
-            return Seed._seed_to_pandas(combined, self.proteins, self.terms)
+            return Seed._seed_to_pandas(combined.tocoo(),
+                                        self.proteins,
+                                        self.terms)
         return combined
 
     def process_output(self, **kwargs):
