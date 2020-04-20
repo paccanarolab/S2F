@@ -52,11 +52,12 @@ class Combination(Graph):
                 kernels = mat_g
             else:
                 kernels = sparse.hstack([kernels, mat_g])
-        self.tell('adding homology graph...')
-        if self.homology != None:
+        if self.homology is not None:
+            self.tell('adding homology graph...')
             mat_homology = Graph.to_sparse_vector(sparse.triu(self.homology, 1)
                                                         .tocoo())
-            kernels = sparse.hstack([kernels, mat_homology]).tocsc()
+            kernels = sparse.hstack([kernels, mat_homology])
+        kernels = kernels.tocsc()
 
         # normalise using a for loop because for some reason doing
         # this with a matrix expression uses a different method
