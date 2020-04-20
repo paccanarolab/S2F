@@ -82,9 +82,6 @@ class Diffuse(FancyApp.FancyApp):
         self.graph = self.graph.tocsc()
         if self.diffusion_method == 'consitency-method':
             self.fix_graph()
-        self.tell('Graph dimensions:', self.graph.shape)
-        a = os.path.basename(self.graph_file)
-        sparse.save_npz(self.output + a + '-DEBUG', self.graph)
 
     def read_labelling(self):
         labelling_df = pd.read_csv(os.path.expanduser(self.labelling_file),
@@ -104,7 +101,3 @@ class Diffuse(FancyApp.FancyApp):
                                             (p_idx, go_idx)),
                                            shape=(len(self.proteins),
                                                   len(self.terms)))
-        self.tell('Labelling dimensions:', self.labelling.shape)
-        a = os.path.basename(self.labelling_file)
-        sparse.save_npz(self.output + a + '-DEBUG', self.labelling)
-
