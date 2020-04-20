@@ -17,12 +17,16 @@ class SeedFromInterPro(FancyApp.FancyApp):
         go = GeneOntology.GeneOntology(self.obo, verbose=True)
         go.build_structure()
         terms = pd.DataFrame(list(enumerate(sorted(go.terms.keys()))))
+        terms.columns = ['term idx', 'term id']
+        terms.set_index('term id', inplace=True)
         self.tell('Extracting protein set from InterPro file')
         proteins = set()
         with open(self.interpro_file) as ip_file:
             for line in ip_file:
                 proteins.add(line.split('\t')[0])
         proteins = pd.DataFrame(list(enumerate(sorted(list(proteins)))))
+        proteins.columns = ['protein idx', 'protein id']
+        proteins.set_index('protein id', inplace=True)
         self.tell('Parsing the seed file...')
         seeder = interpro.InterProSeed(self.interpro_file,
                                        proteins,
