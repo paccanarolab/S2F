@@ -80,7 +80,7 @@ class Diffuse(FancyApp.FancyApp):
         self.graph = self.graph.tolil()
         self.graph.setdiag(0)  # avoid self-loops
         self.graph = self.graph.tocsc()
-        if self.diffusion_method == 'consitency-method':
+        if self.diffusion_method == 'consistency-method':
             self.fix_graph()
 
     def read_labelling(self):
