@@ -28,7 +28,7 @@ class SeedFromInterPro(FancyApp.FancyApp):
                                        proteins,
                                        terms,
                                        go)
-        seeder.process_output(evalue_file=self.evalue_file)
+        seeder.process_output()
         assignment = seeder.get_seed(return_pandas_assignment=True)
         self.tell('Saving seed file into', self.output, '...')
         assignment.to_csv(self.output, sep='\t', header=None, index=False)
