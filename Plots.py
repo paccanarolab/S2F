@@ -80,7 +80,14 @@ labels = [
 ]
 
 # we have these values per threshold, so they are unsafe for plotting
-unsafe_metrics = ['s', 'ru', 'mi', 'roc', 'pr']
+unsafe_metrics = ['roc', 'pr', 'tp', 'fp', 'tn', 'fn', 's', 'ru', 'mi',
+                  'AUC per-gene raw', 'AUPR per-gene raw',
+                  'Precision at 0.2 Recall per-gene', 'F_max per-gene raw',
+                  'NDCG per-gene raw', 'Jaccard per-gene raw',
+                  'smin per-gene raw', 'AUC per-term raw', 'AUPR per-term raw',
+                  'Precision at 0.2 Recall per-term raw', 'F_max per-term raw',
+                  'NDCG per-term raw', 'Jaccard per-term raw',
+                  'smin per-term raw']
 
 for i, organism in final_selection.sort_values(by='Tax ID').iterrows():
     tell('processing organism: ', organism['Organism'],
@@ -90,8 +97,6 @@ for i, organism in final_selection.sort_values(by='Tax ID').iterrows():
         S2F_DIR, f'seeds/interpro/{organism["Tax ID"]}.seed.txt')
     hmmer_file = os.path.join(
         S2F_DIR, f'seeds/hmmer/{organism["Tax ID"]}.seed.txt')
-    # the output directory will be the one with the
-    # latest date in the directory name
     interpro_diff_file = os.path.join(
         S2F_DIR, f'output/{organism["Tax ID"]}/ip_seed.diffusion')
     hmmer_diff_file = os.path.join(
@@ -105,7 +110,6 @@ for i, organism in final_selection.sort_values(by='Tax ID').iterrows():
     goa = os.path.join(GOA_DIRECTORY, organism['File'])
     fasta = os.path.join(FASTA_DIRECTORY, organism['Tax ID'] + '.fasta')
 
-    # load or build matrices
     org_dir = os.path.join(MATRICES_DIRECTORY, organism['Tax ID'] + '/')
 
     if os.path.exists(org_dir + 'metrics_df.pkl'):
