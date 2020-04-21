@@ -82,7 +82,7 @@ labels = [
 # we have these values per threshold, so they are unsafe for plotting
 unsafe_metrics = ['roc', 'pr', 'tp', 'fp', 'tn', 'fn', 's', 'ru', 'mi',
                   'AUC per-gene raw', 'AUPR per-gene raw',
-                  'Precision at 0.2 Recall per-gene', 'F_max per-gene raw',
+                  'Precision at 0.2 Recall per-gene raw', 'F_max per-gene raw',
                   'NDCG per-gene raw', 'Jaccard per-gene raw',
                   'smin per-gene raw', 'AUC per-term raw', 'AUPR per-term raw',
                   'Precision at 0.2 Recall per-term raw', 'F_max per-term raw',
@@ -251,9 +251,9 @@ for i, organism in final_selection.sort_values(by='Tax ID').iterrows():
         if args.plot_individual:
             tell('Generating figures...')
             for metric in metrics_df['metric'].unique():
-                tell(f'metric: {metric}')
                 if metric in unsafe_metrics:
                     continue
+                tell(f'metric: {metric}')
                 plot_selection = metrics_df[metrics_df['metric'] == metric]
 
                 if 'per-' in metric:
