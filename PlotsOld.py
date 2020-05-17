@@ -69,14 +69,11 @@ flatui3 = ["#e5aa34", "#e534bb", "#31d6b5", ]
 # for nice labelling
 labels = [
     ('I+H+D', 'S2F'),
-    ('I+H+CM', 'InterPro + HMMER + CM'),
     ('I+H', 'InterPro + HMMER'),
     ('I', 'InterPro'),
     ('I+D', 'InterPro w/ diffusion'),
-    ('I+CM', 'InterPro + CM'),
     ('H', 'HMMER'),
     ('H+D', 'HMMER w/ diffusion'),
-    ('H+CM', 'HMMER + CM'),
 ]
 
 # we have these values per threshold, so they are unsafe for plotting

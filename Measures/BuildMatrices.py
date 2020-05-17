@@ -143,12 +143,13 @@ class BuildMatrices(FancyApp.FancyApp):
                                               len(self.go_terms)))
         self.hmmer_diff_values = np.zeros((len(self.genes),
                                            len(self.go_terms)))
-        
+
         if self.interpro_cm is not None:
             self.interpro_cm_values = np.zeros((len(self.genes),
                                                 len(self.go_terms)))
         if self.hmmer_cm is not None:
-            self.hmmer_cm_values = np.zeros((len(self.genes), len(self.go_terms)))
+            self.hmmer_cm_values = np.zeros((len(self.genes),
+                                             len(self.go_terms)))
         self.s2f_values = np.zeros((len(self.genes), len(self.go_terms)))
         self.goa_values = np.zeros((len(self.genes), len(self.go_terms)))
         self.information_content = np.zeros(len(self.go_terms))

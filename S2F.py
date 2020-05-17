@@ -16,8 +16,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description='Sequence to Function'
     )
-    subparsers = parser.add_subparsers(help='sub-command help',
-                                       dest='subcommand')
+    subparsers = parser.add_subparsers(
+        help='sub-command help',
+        dest='subcommand')
 
     predict = subparsers.add_parser(
         'predict',
@@ -174,6 +175,24 @@ if __name__ == '__main__':
                               ' GOA. If not provided, S2F will be installed ' +
                               'using only experimental evidence codes.',
                          default='experimental')
+
+    homology = subparsers.add_parser(
+        'homology',
+        description='S2F homology: run homology similarity ' +
+                    'on manually provided files',
+        help='run homology command'
+    )
+    homology.set_defaults(func=commands.homology)
+    homology.add_argument('--fasta',
+                          help='Path to the organism fasta',
+                          required=True)
+    homology.add_argument('--output-dir',
+                          help='Output directory',
+                          required=True)
+    homology.add_argument('--alias',
+                          help='Alias for the organism, to be used in '
+                               'combiantion with `--output-dir`',
+                          required=True)
 
     combine = subparsers.add_parser(
         'combine',

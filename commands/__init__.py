@@ -16,6 +16,12 @@ def measures(args):
     m.run()
 
 
+def homology(args):
+    from commands.RunHomology import RunHomology
+    h = RunHomology(args)
+    h.run()
+
+
 def combine(args):
     from commands.Combine import Combine
     c = Combine(args)
