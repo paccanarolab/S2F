@@ -16,7 +16,8 @@ class RunHomology(FancyApp.FancyApp):
         self.proteins = Utilities.extract_indices_from_fasta(self.fasta)
 
     def run(self):
-        h = homology(self.fasta, self.proteins, self.output_dir, self.alias)
+        h = homology.Homology(
+            self.fasta, self.proteins, self.output_dir, self.alias)
         self.tell('computing homology graph')
         h.compute_graph()
         self.tell('writing homology graph file')
