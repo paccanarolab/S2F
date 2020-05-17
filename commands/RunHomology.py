@@ -1,4 +1,5 @@
 import os
+import subprocess
 
 from graphs import homology
 from Utils import ColourClass, FancyApp, Utilities
@@ -16,6 +17,9 @@ class RunHomology(FancyApp.FancyApp):
         self.proteins = Utilities.extract_indices_from_fasta(self.fasta)
 
     def run(self):
+        subprocess.call(f"makeblastdb -in {self.fasta} -out {self.fasta} " +
+                        "-dbtype prot",
+                        shell=True)
         h = homology.Homology(
             self.fasta, self.proteins, self.output_dir, self.alias)
         self.tell('computing homology graph')
