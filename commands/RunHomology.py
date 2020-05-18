@@ -13,12 +13,16 @@ class RunHomology(FancyApp.FancyApp):
         self.fasta = args.fasta
         self.output_dir = args.output_dir
         self.alias = args.alias
+        self.cpu = args.cpu
         self.tell('extracting proteins from fasta')
         self.proteins = Utilities.extract_indices_from_fasta(self.fasta)
+        if self.cpu == 'infer':
+            # https://docs.python.org/3/library/os.html#os.cpu_count
+            self.cpu = len(os.sched_getaffinity(0))
 
     def run(self):
         subprocess.call(f"makeblastdb -in {self.fasta} -out {self.fasta} " +
-                        "-dbtype prot",
+                        "-dbtype prot -num_threads {self.cpu}",
                         shell=True)
         h = homology.Homology(
             self.fasta, self.proteins, self.output_dir, self.alias)

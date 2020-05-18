@@ -193,7 +193,10 @@ if __name__ == '__main__':
                           help='Alias for the organism, to be used in '
                                'combiantion with `--output-dir`',
                           required=True)
-
+    homology.add_argument('--cpu',
+                          help='Number of CPUs to use for ' 
+                               'parallelisable computations',
+                          default='infer')
     combine = subparsers.add_parser(
         'combine',
         description='S2F combine: run the network combination ' +
