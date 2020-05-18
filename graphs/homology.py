@@ -10,13 +10,18 @@ from graphs import Graph
 
 class Homology(Graph):
 
-    def __init__(self, fasta, proteins, graphs_dir, alias):
+    def __init__(self, fasta, proteins, graphs_dir, alias, cpu='infer'):
         super(Homology, self).__init__()
         self.fasta = fasta
         self.proteins = proteins
         self.graphs_dir = graphs_dir
         self.alias = alias
         self.homology_graph = None
+        self.cpu = cpu
+        if self.cpu == 'infer':
+            # https://docs.python.org/3/library/os.html#os.cpu_count
+            self.cpu = len(os.sched_getaffinity(0))
+
 
     def get_graph(self, **kwargs):
         h = self.homology_graph.merge(self.proteins, left_on='Protein 1',
@@ -39,14 +44,18 @@ class Homology(Graph):
             self.tell('Computing homology graph...')
             # compute the homology graph
             blast_command = "blastp -query {fasta} -db {blastdb} " +\
-                            "-out {out}" + ' -outfmt "6 std qlen"'
+                            "-out {out}" + ' -outfmt "6 std qlen"' +\
+                            " -num_threads {cpu}"
             out = os.path.join(self.graphs_dir, self.alias + '_homology.blast')
             if not os.path.exists(out):
                 self.tell(blast_command.format(fasta=self.fasta,
-                                               blastdb=self.fasta, out=out))
+                                               blastdb=self.fasta,
+                                               out=out, 
+                                               cpu=self.cpu))
                 subprocess.call(blast_command.format(fasta=self.fasta,
                                                      blastdb=self.fasta,
-                                                     out=out), shell=True)
+                                                     out=out,
+                                                     cpu=self.cpu), shell=True)
 
             self.tell('Parsing BLAST output...')
             # parse the blast output

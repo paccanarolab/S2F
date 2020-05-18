@@ -22,10 +22,10 @@ class RunHomology(FancyApp.FancyApp):
 
     def run(self):
         subprocess.call(f"makeblastdb -in {self.fasta} -out {self.fasta} " +
-                        "-dbtype prot -num_threads {self.cpu}",
+                        "-dbtype prot",
                         shell=True)
         h = homology.Homology(
-            self.fasta, self.proteins, self.output_dir, self.alias)
+            self.fasta, self.proteins, self.output_dir, self.alias, self.cpu)
         self.tell('computing homology graph')
         h.compute_graph()
         self.tell('writing homology graph file')
