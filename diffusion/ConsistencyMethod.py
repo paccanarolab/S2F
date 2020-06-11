@@ -86,9 +86,12 @@ class ConsistencyMethod(Diffusion):
         kwargs
             Parameters to compute the kernel, the following
             entries will be handled:
-            * 'alpha' : float
+            * 'mu' : float
                 To be used in the transformation described above.
                 Defaults to 1.0
+            * 'pinv' : boolean
+                If True, the pseudo-inverse function will be used instead
+                of the inverse, by default False
 
         Notes
         -----
@@ -99,7 +102,7 @@ class ConsistencyMethod(Diffusion):
 
             self.tell('Diffusion Kernel computation started...')
             # build D
-            n = self.graph.shape[0]
+            # n = self.graph.shape[0]
             sums = self.graph.sum(1)  # sum every column per row
             # in case there are unconnected parts in the matrix
             indNonZeros = np.where(sums != 0)
@@ -122,7 +125,10 @@ class ConsistencyMethod(Diffusion):
             IalphaS = sparse.eye(S.shape[0]) - alpha * S
 
             self.tell(r'Inverting (I - \alpha S)...')
-            self.kernel = np.linalg.inv(IalphaS.todense())
+            if self.kernel_params['pinv']:
+                self.kernel = np.linalg.pinv(IalphaS.todense())
+            else:
+                self.kernel = np.linalg.inv(IalphaS.todense())
             self.tell('Kernel built')
         else:
             self.warning('Wrong parameters in Compute Kernel')
@@ -131,5 +137,6 @@ class ConsistencyMethod(Diffusion):
     def set_kernel_params(self, **kwargs):
         self.tell('reading kernel parameters...')
         self.kernel_params['mu'] = kwargs.get('mu', 1.0)
+        self.kernel_params['pinv'] = kwargs.get('mu', False)
         self.tell(self.kernel_params)
         return True
