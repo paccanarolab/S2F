@@ -137,6 +137,6 @@ class ConsistencyMethod(Diffusion):
     def set_kernel_params(self, **kwargs):
         self.tell('reading kernel parameters...')
         self.kernel_params['mu'] = kwargs.get('mu', 1.0)
-        self.kernel_params['pinv'] = kwargs.get('mu', False)
+        self.kernel_params['pinv'] = kwargs.get('pinv', False)
         self.tell(self.kernel_params)
         return True
