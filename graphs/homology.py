@@ -22,7 +22,6 @@ class Homology(Graph):
             # https://docs.python.org/3/library/os.html#os.cpu_count
             self.cpu = len(os.sched_getaffinity(0))
 
-
     def get_graph(self, **kwargs):
         h = self.homology_graph.merge(self.proteins, left_on='Protein 1',
                                       right_index=True)
@@ -50,7 +49,7 @@ class Homology(Graph):
             if not os.path.exists(out):
                 self.tell(blast_command.format(fasta=self.fasta,
                                                blastdb=self.fasta,
-                                               out=out, 
+                                               out=out,
                                                cpu=self.cpu))
                 subprocess.call(blast_command.format(fasta=self.fasta,
                                                      blastdb=self.fasta,

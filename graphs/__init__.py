@@ -122,3 +122,26 @@ class Graph(FancyApp.FancyApp):
         return sparse.coo_matrix(
             sparse.triu(x, 1) + sparse.triu(x, 1).T
         )
+
+    @staticmethod
+    def numpy_to_pandas(adjacency, proteins):
+        """transform a numpy array into a pandas DataFrame
+
+        Parameters
+        ----------
+        adjacency : np.ndarray
+            adjacency matrix
+        proteins : List[str]
+            the names of the nodes, it must correspond to the adjacency matrix
+
+        Returns
+        -------
+        pd.DataFrame
+            the PPI in pandas format
+        """
+        data = {'p1': [], 'p2': [], 'w': []}
+        for p1, p2 in combinations(range(len(proteins)), 2):
+            data['p1'].append(proteins[p1])
+            data['p2'].append(proteins[p2])
+            data['w'].append(adjacency[p1, p2])
+        return pd.DataFrame(data)

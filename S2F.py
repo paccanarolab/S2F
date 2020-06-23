@@ -256,6 +256,10 @@ if __name__ == '__main__':
                                                  'label-weighted'])
     diffuse.add_argument('--kernel-parameters', help='kernel parameters',
                          default={'lambda': 0.1}, type=json.loads)
+    diffuse.add_argument('--kernel-output',
+                         help='A path to a filename where the kernel is to be '
+                               'written in tab format, "no-output" by default',
+                         default='no-output')
     diffuse.add_argument('--output', help='Path to desired output file',
                          required=True)
 

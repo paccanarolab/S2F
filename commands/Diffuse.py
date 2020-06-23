@@ -6,6 +6,7 @@ from scipy import sparse
 from diffusion.ConsistencyMethod import ConsistencyMethod
 from diffusion.LabelWeightedPropagation import LabelWeightedPropagation
 from diffusion.S2FLabelPropagation import S2FLabelPropagation
+from graphs import Graph
 from Utils import ColourClass, FancyApp, Utilities
 
 
@@ -25,6 +26,7 @@ class Diffuse(FancyApp.FancyApp):
         self.labelling = None
         self.fasta = args.fasta
         self.output = args.output
+        self.kernel_output = args.kernel_output
         self.proteins = Utilities.extract_indices_from_fasta(self.fasta)
         self.terms = None
         self.fix = False
@@ -39,6 +41,10 @@ class Diffuse(FancyApp.FancyApp):
         diffusion = self.diffusion_method(self.graph, self.proteins,
                                           self.terms)
         diffusion.compute_kernel(**self.kernel_parameters)
+        if self.kernel_output != 'no-output':
+            self.tell('Saving kernel file into:', self.kernel_output)
+            Graph.numpy_to_pandas(diffusion.kernel,
+                                  diffusion.proteins.index.tolist())
         diffusion.diffuse(self.labelling, **self.kernel_parameters)
         self.tell('Saving diffusion results into:', self.output)
         diffusion.write_results(self.output)
