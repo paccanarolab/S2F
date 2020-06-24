@@ -43,8 +43,13 @@ class Diffuse(FancyApp.FancyApp):
         diffusion.compute_kernel(**self.kernel_parameters)
         if self.kernel_output != 'no-output':
             self.tell('Saving kernel file into:', self.kernel_output)
-            Graph.numpy_to_pandas(diffusion.kernel,
-                                  diffusion.proteins.index.tolist())
+            kernel = Graph.numpy_to_pandas(
+                diffusion.kernel,
+                diffusion.proteins.index.tolist())
+            kernel.to_csv(self.kernel_output,
+                          sep='\t',
+                          index=False)
+            
         diffusion.diffuse(self.labelling, **self.kernel_parameters)
         self.tell('Saving diffusion results into:', self.output)
         diffusion.write_results(self.output)
