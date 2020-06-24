@@ -1,6 +1,7 @@
 import abc
 
 import numpy as np
+import pandas as pd
 from scipy import sparse
 from itertools import combinations
 from Utils import FancyApp
