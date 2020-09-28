@@ -90,4 +90,5 @@ class Combination(Graph):
         res = sparse.linalg.lsqr(k_norm, jac)
         self.combined = sparse.coo_matrix(k_norm.tocsc()[:, :-1]
                                                 .dot(res[0][:-1]))
-        self.tell('Coefficients:', res[0][:-1])
+        coeffs = list(zip(kernel_order, res[0][:-1]))
+        self.tell('Coefficients:', coeffs)
