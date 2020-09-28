@@ -54,6 +54,7 @@ class Combination(Graph):
                 kernels = sparse.hstack([kernels, mat_g])
         if self.homology is not None:
             self.tell('adding homology graph...')
+            kernel_order.append('homology')
             mat_homology = Graph.to_sparse_vector(sparse.triu(self.homology, 1)
                                                         .tocoo())
             kernels = sparse.hstack([kernels, mat_homology])
