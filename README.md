@@ -38,7 +38,7 @@ You may simply run:
 ```bash
 python S2F.py install
 ```
-You will be asked to confirm the configured options of the installation script. If you're happy and reply with `y`, the installer will download and process the required databases. This, however, assumes that all requirements listed above are met. 
+You will be asked to confirm the configured options of the installation script. If you're happy and reply with `y`, the installer will download and process the required databases. This, however, assumes that all requirements listed above are met. ***Important:** this will download a copy of the STRING database, which has a considerable size, the installation might take several hours, or even days, depending on your internet connection speed.*
 
 ### Configure the installation script
 
