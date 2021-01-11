@@ -1,0 +1,11 @@
+pandas
+gzip
+urllib
+numpy
+pandas
+scikit-learn
+tweepy
+scipy
+requests
+matplotlib
+seaborn
