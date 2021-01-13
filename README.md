@@ -10,14 +10,14 @@ S2F brings the power of label propagation in biological networks for prediciting
 
 On the Wiki of this repository, we have documentation that will get you started with S2F:
 
-* [Quickstart](wiki/Quickstart)
+* [Quickstart](https://github.com/paccanarolab/S2F/wiki/Quickstart)
 
 ### Setup 
 
-* [Requirements](Requirements)
-* [Installation Instructions](Installation-Instructions)
+* [Requirements](https://github.com/paccanarolab/S2F/wikiRequirements)
+* [Installation Instructions](https://github.com/paccanarolab/S2F/wikiInstallation-Instructions)
 
 ### Common use cases
 
-* [How to make a prediction](How-to-make-a-prediction)
-* [How to replicate the paper results](How-to-replicate-the-paper-results)
+* [How to make a prediction](https://github.com/paccanarolab/S2F/wikiHow-to-make-a-prediction)
+* [How to replicate the paper results](https://github.com/paccanarolab/S2F/wikiHow-to-replicate-the-paper-results)
