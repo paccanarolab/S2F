@@ -14,10 +14,10 @@ On the Wiki of this repository, we have documentation that will get you started 
 
 ### Setup 
 
-* [Requirements](https://github.com/paccanarolab/S2F/wikiRequirements)
-* [Installation Instructions](https://github.com/paccanarolab/S2F/wikiInstallation-Instructions)
+* [Requirements](https://github.com/paccanarolab/S2F/wiki/Requirements)
+* [Installation Instructions](https://github.com/paccanarolab/S2F/wiki/Installation-Instructions)
 
 ### Common use cases
 
-* [How to make a prediction](https://github.com/paccanarolab/S2F/wikiHow-to-make-a-prediction)
-* [How to replicate the paper results](https://github.com/paccanarolab/S2F/wikiHow-to-replicate-the-paper-results)
+* [How to make a prediction](https://github.com/paccanarolab/S2F/wiki/How-to-make-a-prediction)
+* [How to replicate the paper results](https://github.com/paccanarolab/S2F/wiki/How-to-replicate-the-paper-results)
