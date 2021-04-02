@@ -14,6 +14,11 @@ matplotlib.use('Agg')
 # from Utils.notification import load_configuration, get_api
 
 
+def save_list_to_txt(l, file_name):
+    with open(file_name, "w") as out:
+        out.write("\n".join(map(str, l)))
+
+
 def tell(*args, **kwargs):
     FancyApp.FancyApp.yell(
         ColourClass.bcolors.BOLD_GREEN, 'plotter', *args, **kwargs)
@@ -149,6 +154,8 @@ for i, organism in final_selection.sort_values(by='Tax ID').iterrows():
             np.save(org_dir + 's2f_values.npy', matrix_builder.s2f_values)
             np.save(org_dir + 'information_content.npy',
                     matrix_builder.information_content)
+            save_list_to_txt(org_dir + "genes.txt", matrix_builder.genes)
+            save_list_to_txt(org_dir + "goterms.txt", matrix_builder.go_terms)
             goa_values = matrix_builder.goa_values
             hmmer_diff_values = matrix_builder.hmmer_diff_values
             hmmer_cm_values = matrix_builder.hmmer_cm_values
