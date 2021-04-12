@@ -5,7 +5,7 @@ import pandas as pd
 from scipy import sparse
 
 from seeds import Seed
-from Utils import ColourClass
+from Utils import ColourClass, Utilities
 
 
 class HMMerSeed(Seed):
