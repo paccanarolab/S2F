@@ -36,8 +36,9 @@ class InterProSeed(Seed):
         for line in open(self.interpro):
             fields = line.split('\t')
             method = fields[3].lower()
-            prot = (Utilities.extract_uniprot_accession(fields[0]) 
-                if protein_format is 'uniprot' else fields[0])
+            prot = fields[0]
+            if protein_format is 'uniprot':
+                prot = Utilities.extract_uniprot_accession(prot) 
             if len(fields) >= 14:
                 if method not in ['seg', 'coil']:
                     terms = fields[13].strip()

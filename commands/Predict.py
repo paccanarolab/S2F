@@ -274,7 +274,9 @@ class Predict(FancyApp.FancyApp):
             self.tell('Building InterPro seed file')
             interpro_seed = interpro.InterProSeed(self.interpro_output,
                                                   self.proteins,
-                                                  self.terms, self.go)
+                                                  self.terms, self.go,
+                                                  self.fasta_id_parser
+                                                  )
             # TODO: methods is here only to debug stuff, remove
             methods = interpro_seed.process_output()
             for k, s in methods.items():
@@ -313,7 +315,9 @@ class Predict(FancyApp.FancyApp):
             hmmer_seed = hmmer.HMMerSeed(self.hmmer_output, self.proteins,
                                          self.terms, self.go,
                                          self.get_hmmer_blacklist(),
-                                         self.filtered_goa)
+                                         self.filtered_goa, 
+                                         self.fasta_id_parser
+                                         )
             hmmer_seed.process_output(evalue_file=evalue_file)
             seed = hmmer_seed.get_seed()
             sparse.save_npz(seed_file, seed)
@@ -343,7 +347,7 @@ class Predict(FancyApp.FancyApp):
                                     self.output_dir, orthologs_dir, graphs_dir,
                                     self.alias, self.cpu,
                                     self.get_transfer_blacklist(),
-                                    1e-6, 80.0, 60.0)
+                                    1e-6, 80.0, 60.0, self.fasta_id_parser)
         col.compute_graph()
         return col.get_graph()
 

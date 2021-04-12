@@ -10,7 +10,7 @@ from Utils import ColourClass
 
 class HMMerSeed(Seed):
 
-    def __init__(self, hmmer, proteins, terms, go, blacklist, goa):
+    def __init__(self, hmmer, proteins, terms, go, blacklist, goa, protein_format):
         super(HMMerSeed, self).__init__()
         self.colour = ColourClass.bcolors.BOLD_CYAN
         self.hmmer = hmmer
@@ -21,6 +21,7 @@ class HMMerSeed(Seed):
         self.goa = goa
         self.evalue_file = ''
         self.seed_threshhold = 1e-4
+        self.protein_format = protein_format
 
     def get_seed(self, **kwargs):
         if 'seed_threshhold' in kwargs:
@@ -76,8 +77,9 @@ class HMMerSeed(Seed):
                 if line.startswith('#'):
                     continue
                 fields = line.strip().split()
-                target = (Utilities.extract_uniprot_accession(fields[0]) 
-                    if protein_format is 'uniprot' else fields[0])
+                target = fields[0]
+                if self.protein_format is 'uniprot':
+                    target = Utilities.extract_uniprot_accession(target) 
                 query = fields[2]
                 evalue = fields[4]
 
