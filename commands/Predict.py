@@ -464,6 +464,7 @@ class Predict(FancyApp.FancyApp):
         summary += '\tTransfer black list:\t\t'
         summary += self.transfer_blacklist + '\n'
         summary += '\tGOA clamp:\t\t\t' + self.goa_clamp + '\n'
+        summary += '\tFASTA handling:\t\t\t' + self.fasta_id_parser + '\n'
 
         summary += 'Do you want to continue with these settings?'
 

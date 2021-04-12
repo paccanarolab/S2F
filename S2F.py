@@ -92,7 +92,7 @@ if __name__ == '__main__':
                          action='store_true')
     predict.add_argument('--fasta-id-parser',
                          help='Determines how the protein IDs will be handled',
-                         default='uniprot', choices=['uniprot', 'entireID'])
+                         default='uniprot', choices=['uniprot', 'entire_id'])
 
     # TODO: perhaps it is a good idea to add the BLAST executable
     # as a parameter as well
