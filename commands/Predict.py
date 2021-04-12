@@ -154,6 +154,8 @@ class Predict(FancyApp.FancyApp):
         if self.cpu == 'infer':
             # https://docs.python.org/3/library/os.html#os.cpu_count
             self.cpu = len(os.sched_getaffinity(0))
+        else:
+            self.cpu = int(self.cpu)
 
     def run(self):
         # 1. create output directory
