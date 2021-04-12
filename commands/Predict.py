@@ -346,11 +346,13 @@ class Predict(FancyApp.FancyApp):
         return col.get_graph()
 
     def get_transfer_blacklist(self):
-        return pd.read_csv(
-            self.transfer_blacklist,
-            header=None,
-            names=['tax_id']
-        ).tax_id.astype('str').tolist()
+        if self.hmmer_blacklist != 'compute':
+            return pd.read_csv(
+                self.transfer_blacklist,
+                header=None,
+                names=['tax_id']
+            ).tax_id.astype('str').tolist()
+        return None
 
     def run_graph_homology(self):
         graphs_dir = os.path.join(self.installation_directory,

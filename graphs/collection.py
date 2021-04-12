@@ -103,6 +103,8 @@ class Collection(Graph):
         self.cpus = cpus
         self.db = self.fasta
         self.blacklist = blacklist
+        if self.blacklist is None:
+            self.blacklist = []
         self.max_evalue = max_evalue
         self.perc = perc
         self.positives = positives
