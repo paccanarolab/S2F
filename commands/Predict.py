@@ -310,11 +310,13 @@ class Predict(FancyApp.FancyApp):
         return seed
 
     def get_hmmer_blacklist(self):
-        return pd.read_csv(
-            self.hmmer_blacklist,
-            header=None,
-            names=['tax_id']
-        ).tax_id.astype('str').tolist()
+        if self.hmmer_blacklist != 'compute':
+            return pd.read_csv(
+                self.hmmer_blacklist,
+                header=None,
+                names=['tax_id']
+            ).tax_id.astype('str').tolist()
+        return None
 
     def run_graph_collection(self):
         string_dir = os.path.join(self.installation_directory,

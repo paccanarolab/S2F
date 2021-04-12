@@ -20,7 +20,8 @@ class BuildMatrices(FancyApp.FancyApp):
             obo,
             domains=['cellular_component', 'biological_process',
                      'molecular_function'],
-            verbose=True):
+            verbose=True,
+            full_analysis=True):
 
         super(BuildMatrices, self).__init__()
         self.colour = ColourClass.bcolors.BOLD_CYAN
@@ -73,8 +74,9 @@ class BuildMatrices(FancyApp.FancyApp):
         self.information_content = None
 
         self.infer_headers()
-        self.infer_values()
-        self.compute_information_content()
+        if full_analysis:
+            self.infer_values()
+            self.compute_information_content()
 
     def compute_information_content(self):
         for term, idx in self.go_terms_idx.items():

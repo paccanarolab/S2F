@@ -30,10 +30,11 @@ else:
     
 found_taxons=taxonomy_df[taxonomy_df['Organism ID'].isin(proteomes_df['Tax ID'].astype('str'))]
 proteomes_df = proteomes_df.merge(found_taxons, left_on='Tax ID', right_on='Organism ID')
+proteomes_df = proteomes_df[proteomes_df['Total entries'] == proteomes_df['Protein count']]
 proteomes_df['Superkingdom'] = proteomes_df['Taxonomic lineage'].str.partition(',')[0]
 bacteria_df = proteomes_df[proteomes_df['Superkingdom'] == 'Bacteria']
 
-
+print(f'Downloading {bacteria_df.shape[0]} files...')
 # ## Download GOAS
 
 # create the selection_goa directory if it doesn't exist
