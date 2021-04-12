@@ -365,7 +365,7 @@ class Predict(FancyApp.FancyApp):
                                   'graphs/homology')
         hom = homology.Homology(self.fasta, self.proteins,
                                 graphs_dir,
-                                self.alias)
+                                self.alias, self.fasta_id_parser)
         hom.compute_graph()
         return hom.get_graph()
 
