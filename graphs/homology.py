@@ -6,17 +6,18 @@ import pandas as pd
 from scipy import sparse
 
 from graphs import Graph
-
+from Utils import Utilities
 
 class Homology(Graph):
 
-    def __init__(self, fasta, proteins, graphs_dir, alias, cpu='infer'):
+    def __init__(self, fasta, proteins, graphs_dir, alias, protein_format, cpu='infer'):
         super(Homology, self).__init__()
         self.fasta = fasta
         self.proteins = proteins
         self.graphs_dir = graphs_dir
         self.alias = alias
         self.homology_graph = None
+        self.protein_format = protein_format
         self.cpu = cpu
         if self.cpu == 'infer':
             # https://docs.python.org/3/library/os.html#os.cpu_count
@@ -63,6 +64,9 @@ class Homology(Graph):
                 fields = line.strip().split('\t')
                 query_id = fields[0]
                 subject_id = fields[1]
+                if self.protein_format == 'uniprot':
+                    query_id = Utilities.extract_uniprot_accession(query_id)
+                    subject_id = Utilities.extract_uniprot_accession(subject_id)
                 evalue = float(fields[10])
 
                 if query_id not in homology:

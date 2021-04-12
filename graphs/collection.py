@@ -7,19 +7,23 @@ import pandas as pd
 from scipy import sparse
 
 from graphs import Graph
-from Utils import ColourClass, FancyApp
+from Utils import ColourClass, FancyApp, Utilities
 
 
-def parse_blast(filename):
+def parse_blast(filename, protein_format):
     best_hit_dict = {}
     for line in open(filename):
         parts = line.strip().split('\t')
         query = parts[0]
+        if protein_format == 'uniprot':
+            query = Utilities.extract_uniprot_accession(query)
         evalue = parts[10]
         if query in best_hit_dict and best_hit_dict[query]['evalue'] < evalue:
             continue
 
         target = parts[1].strip()
+        if protein_format == 'uniprot':
+            target = Utilities.extract_uniprot_accession(target)
         pi = float(parts[2].strip())
         perc = 100.0 * float(parts[7]) - float(parts[6]) / float(parts[-1])
         best_hit_dict[query] = {
@@ -31,7 +35,7 @@ def parse_blast(filename):
     return best_hit_dict
 
 
-def compute_ortholog(fasta, db, string_fasta, string_db, out, out_dir):
+def compute_ortholog(fasta, db, string_fasta, string_db, out, out_dir, protein_format):
     outfile = os.path.join(out_dir, out)
     if not os.path.exists(outfile):
         blast_command = 'blastp -query {fasta} -db {blastdb} -out {out}' +\
@@ -51,8 +55,8 @@ def compute_ortholog(fasta, db, string_fasta, string_db, out, out_dir):
 
         orthologs_found = {}
 
-        forward = parse_blast(out_1)
-        backward = parse_blast(out_2)
+        forward = parse_blast(out_1, protein_format)
+        backward = parse_blast(out_2, protein_format)
         index = 0
         for query, infoq in forward.items():
             if infoq['target'] in backward.keys():
@@ -86,7 +90,7 @@ class Collection(Graph):
     def __init__(self,
                  fasta, proteins, string_dir, string_links, core_ids,
                  output_dir, orthologs_dir, graphs_dir, alias, cpus, blacklist,
-                 max_evalue, perc, positives,
+                 max_evalue, perc, positives, protein_format,
                  interesting_graphs=['neighborhood', 'experiments',
                                      'coexpression', 'textmining',
                                      'database']):
@@ -110,6 +114,7 @@ class Collection(Graph):
         self.positives = positives
         self.interesting_graphs = interesting_graphs
         self.collection = None
+        self.protein_format = protein_format
 
     def get_graph(self, **kwargs):
         # It is assumed that the collection was already made
@@ -228,7 +233,7 @@ class Collection(Graph):
                 fasta = os.path.join(self.string_dir, core_id + '.faa')
                 out = self.alias + '_AND_' + core_id
                 params.append([self.fasta, self.db, fasta, fasta, out,
-                               self.orthologs_dir])
+                               self.orthologs_dir, self.protein_format])
             with Pool(self.cpus) as p:
                 p.starmap(compute_ortholog, params)
 

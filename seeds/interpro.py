@@ -2,18 +2,19 @@ import numpy as np
 import pandas as pd
 from scipy import sparse
 from seeds import Seed
-from Utils import ColourClass
+from Utils import ColourClass, Utilities
 
 
 class InterProSeed(Seed):
 
-    def __init__(self, interpro, proteins, terms, go):
+    def __init__(self, interpro, proteins, terms, go, protein_format):
         super(InterProSeed, self).__init__()
         self.colour = ColourClass.bcolors.BOLD_CYAN
         self.interpro = interpro
         self.proteins = proteins
         self.terms = terms
         self.go = go
+        self.protein_format = protein_format
         self.all_methods = None
         self.methods = []
 
@@ -35,7 +36,8 @@ class InterProSeed(Seed):
         for line in open(self.interpro):
             fields = line.split('\t')
             method = fields[3].lower()
-            prot = fields[0]
+            prot = (Utilities.extract_uniprot_accession(fields[0]) 
+                if protein_format is 'uniprot' else fields[0])
             if len(fields) >= 14:
                 if method not in ['seg', 'coil']:
                     terms = fields[13].strip()

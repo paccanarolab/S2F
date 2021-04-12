@@ -89,13 +89,20 @@ def ndcg_at_k(r, k):
     return dcg_at_k(r, k) / idcg
 
 
+def extract_uniprot_accession(protein_id):
+    try:
+        return protein_id.split('|')[1]
+    except IndexError:
+        return protein_id
+
+
 def keep_entire_prot_id(fasta_line):
     return fasta_line[1:].split()[0]
 
 
 def keep_uniprot_accession(fasta_line):
     try:
-        return fasta_line[1:].split()[0].split('|')[1]
+        return extract_uniprot_accession(fasta_line[1:].split()[0])
     except IndexError:
         return keep_entire_prot_id(fasta_line)
 

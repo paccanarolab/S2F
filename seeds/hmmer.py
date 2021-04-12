@@ -76,7 +76,8 @@ class HMMerSeed(Seed):
                 if line.startswith('#'):
                     continue
                 fields = line.strip().split()
-                target = fields[0]
+                target = (Utilities.extract_uniprot_accession(fields[0]) 
+                    if protein_format is 'uniprot' else fields[0])
                 query = fields[2]
                 evalue = fields[4]
 

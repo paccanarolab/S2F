@@ -235,12 +235,12 @@ class Predict(FancyApp.FancyApp):
     def make_indices(self):
         self.tell('Extracting list of proteins from fasta file')
         if self.fasta_id_parser == 'uniprot':
-           self.fasta_id_parser = Utilities.keep_uniprot_accession
+            fasta_id_parser = Utilities.keep_uniprot_accession
         else:
-            self.fasta_id_parser = Utilities.keep_entire_prot_id
+            fasta_id_parser = Utilities.keep_entire_prot_id
         self.proteins = Utilities.extract_indices_from_fasta(
             self.fasta,
-            processing_func=self.fasta_id_parser
+            processing_func=fasta_id_parser
         )
         self.proteins.to_pickle(os.path.join(self.output_dir, 'proteins.df'))
 
