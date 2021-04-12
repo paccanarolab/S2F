@@ -67,6 +67,9 @@ class Predict(FancyApp.FancyApp):
             self.unattended_mode = run_conf.getboolean('functions',
                                                        'unattended',
                                                        fallback=False)
+            self.fasta_id_parser = run_conf.getboolean('functions',
+                                                       'fasta_id_parser',
+                                                       fallback='uniprot')
         else:
             self.config_file = os.path.expanduser(args.config_file)
 
@@ -90,6 +93,7 @@ class Predict(FancyApp.FancyApp):
 
             self.goa_clamp = os.path.expanduser(args.goa_clamp)
             self.unattended_mode = args.unattended is True
+            self.fasta_id_parser = args.fasta_id_parser
 
         self.installation_directory = os.path.expanduser(
             Configuration.CONFIG.get('directories', 'installation_directory'))
@@ -228,7 +232,14 @@ class Predict(FancyApp.FancyApp):
 
     def make_indices(self):
         self.tell('Extracting list of proteins from fasta file')
-        self.proteins = Utilities.extract_indices_from_fasta(self.fasta)
+        if self.fasta_id_parser == 'uniprot':
+           self.fasta_id_parser = Utilities.keep_uniprot_accession
+        else:
+            self.fasta_id_parser = Utilities.keep_entire_prot_id
+        self.proteins = Utilities.extract_indices_from_fasta(
+            self.fasta,
+            processing_func=self.fasta_id_parser
+        )
         self.proteins.to_pickle(os.path.join(self.output_dir, 'proteins.df'))
 
         self.tell('Building GO structure')
