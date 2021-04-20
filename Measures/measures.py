@@ -3,6 +3,7 @@ import abc
 import numpy as np
 import pandas as pd
 import sklearn.metrics
+from sklearn.metrics._ranking import _binary_clf_curve
 
 from Measures.letor_metrics import ndcg_score
 from Utils import FancyApp
@@ -203,9 +204,7 @@ class HX_py(S2FMeasure):
                 'pr': [np.array([0, 1]), np.array([qty_pos / N, qty_pos / N])],
             }
 
-        FP, TP, TH = sklearn.metrics.ranking._binary_clf_curve(dat[:, 1],
-                                                               dat[:, 0],
-                                                               pos_label=1.0)
+        FP, TP, TH = _binary_clf_curve(dat[:, 1], dat[:, 0], pos_label=1.0)
 
         TN = qty_neg - FP
         FN = qty_pos - TP
