@@ -1,6 +1,4 @@
 pandas
-gzip
-urllib
 numpy
 pandas
 scikit-learn
