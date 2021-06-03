@@ -67,7 +67,7 @@ class Predict(FancyApp.FancyApp):
             self.unattended_mode = run_conf.getboolean('functions',
                                                        'unattended',
                                                        fallback=False)
-            self.fasta_id_parser = run_conf.getboolean('functions',
+            self.fasta_id_parser = run_conf.get('functions',
                                                        'fasta_id_parser',
                                                        fallback='uniprot')
         else:
