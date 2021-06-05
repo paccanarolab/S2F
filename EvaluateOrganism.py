@@ -102,7 +102,7 @@ else:
 prediction = np.zeros((len(proteins), len(terms)))
 goa = np.zeros((len(proteins), len(terms)))
 information_content = np.zeros(len(terms))
-if args.prediction_fmt == 'text':
+if args.prediction_fmt == 'txt':
     tell('Building prediction matrix...')
     for line in open(args.prediction):
         fields = line.strip().split()
