@@ -37,7 +37,7 @@ class InterProSeed(Seed):
             fields = line.split('\t')
             method = fields[3].lower()
             prot = fields[0]
-            if self.protein_format is 'uniprot':
+            if self.protein_format == 'uniprot':
                 prot = Utilities.extract_uniprot_accession(prot) 
             if len(fields) >= 14:
                 if method not in ['seg', 'coil']:

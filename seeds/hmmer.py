@@ -79,7 +79,7 @@ class HMMerSeed(Seed):
                 fields = line.strip().split()
                 target = fields[0]
                 query = fields[2]
-                if self.protein_format is 'uniprot':
+                if self.protein_format == 'uniprot':
                     target = Utilities.extract_uniprot_accession(target) 
                     query = Utilities.extract_uniprot_accession(query) 
                 evalue = fields[4]
