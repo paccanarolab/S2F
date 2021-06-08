@@ -303,12 +303,14 @@ class GeneOntology(FancyApp.FancyApp):
         parser = AnnotationParser.AnnotationFile(annotation_file,
                                                  organism_name)
         counter = 0
+        blacklist_counter = 0
         self.tell('Annotating ' + organism_name)
         for annotation in parser:
             # check that the organism is not blacklisted
             if blacklist:
-                blacklisted = [i for i in annotation.taxons if i in blacklist]
+                blacklisted = [i.split(':')[1] for i in annotation.taxons if i.split(':')[1] in blacklist]
                 if blacklisted:
+                    blacklist_counter += 1
                     continue
             # check the desired evidence code
             if annotation.evidence_code in evidence_codes:
@@ -333,6 +335,9 @@ class GeneOntology(FancyApp.FancyApp):
 
         self.warning('A total of ' + str(counter) +
                      ' annotations were skipped')
+        self.warning('A total of ' + str(blacklist_counter) +
+                     ' annotations were excluded to the blacklist')
+
 
     def load_annotations(self, annotations, organism_name,
                          annotate_obsoletes=False):
