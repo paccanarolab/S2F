@@ -111,22 +111,26 @@ class Combine(FancyApp.FancyApp):
         if self.homology_file == '':
             self.tell('No homology file provided, combinind only collection')
             return None
-        columns = ['protein1', 'protein2', 'score']
-        types = dict([(x, 'float32') if "protein" not in x
-                      else (x, "str") for x in columns])
-        df = pd.read_csv(self.homology_file, sep=self.homology_sep,
-                         names=columns, dtype=types)
+        if self.homology_sep != 'pickle':
+            columns = ['Protein 1', 'Protein 2', 'weight']
+            types = dict([(x, 'float32') if "protein" not in x 
+                           else (x, "str") for x in columns])
+            df = pd.read_csv(self.homology_file, sep=self.homology_sep,
+                             names=columns, dtype=types)
+        else:
+            df = pd.read_pickle(self.homology_file)
 
-        min_protein = df[["protein1", "protein2"]].min(axis=1)
-        max_protein = df[["protein1", "protein2"]].max(axis=1)
-        df.loc[:, "protein1"] = min_protein
-        df.loc[:, "protein2"] = max_protein
+        Graph.assert_lexicographical_order(df)
 
-        df = df.merge(self.proteins, left_on='protein1', right_index=True)
-        df = df.merge(self.proteins, left_on='protein2', right_index=True,
+        df = df[df['Protein 1'] != df['Protein 2']].drop_duplicates()
+
+        df = df.merge(self.proteins, left_on='Protein 1', right_index=True)
+        df = df.merge(self.proteins, left_on='Protein 2', right_index=True,
                       suffixes=['1', '2'])
         p1_idx = df['protein idx1'].values
         p2_idx = df['protein idx2'].values
-        return sparse.coo_matrix((df['score'], (p1_idx, p2_idx)),
-                                 shape=(len(self.proteins),
-                                        len(self.proteins)))
+        return sparse.coo_matrix((df['weight'], (p1_idx, p2_idx)),
+                                  shape=(len(self.proteins),
+                                         len(self.proteins)))
+        
+

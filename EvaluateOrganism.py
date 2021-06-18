@@ -23,12 +23,20 @@ def tell(*args, **kwargs):
         ColourClass.bcolors.BOLD_GREEN, 'evaluator', *args, **kwargs)
 
 
+def warn(text):
+    text =  FancyApp.FancyApp.warning_text(text)
+    tell(text)
+
 aparser = argparse.ArgumentParser()
 required_arguments = aparser.add_argument_group('required arguments')
 required_arguments.add_argument('--prediction',
                                 help='prediction file', required=True)
 required_arguments.add_argument('--goa', help='goa file',
                                 required=True)
+required_arguments.add_argument('--information-content', 
+                                help='A TSV file containing pre-calculated'
+                                     ' information content',
+                                default='calculate')
 required_arguments.add_argument('--proteins-idx',
                                 help='path to the proteins index file, used'
                                 'only when prediction format is numpy',
@@ -123,22 +131,37 @@ if not os.path.exists(args.outputdir):
 
 if args.output_matrices:
     tell('saving prediction matrix')
-    np.save(os.path.join(args.outputdir,'prediction.npy'), prediction)
+    np.save(os.path.join(args.outputdir, 'prediction.npy'), prediction)
 
     tell('saving GOA matrix')
-    np.save(os.path.join(args.outputdir,'goa.npy'), goa)
+    np.save(os.path.join(args.outputdir, 'goa.npy'), goa)
+
+term_to_ic = {}
+if args.information_content != 'calculate':
+    tell(f'Loading information content file: {args.information_content}')
+    for line in open(args.information_content):
+        goterm, ic = line.strip().split()
+        ic = float(ic)
+        term_to_ic[goterm] = ic
 
 if args.compute_metrics:
     tell('Calculating Information Content')
     for term, i in terms_idx.items():
-        information_content[i] = go.find_term(term).information_content('GOA')
+        if args.information_content == 'calculate':
+            information_content[i] = go.find_term(term).information_content('GOA')
+        else:
+            try:
+                information_content[i] = term_to_ic[term]
+            except KeyError:
+                # a prediction exists for this one, but it's NOT in GOA
+                pass
 
     tell('saving indices')
-    prots_df = pd.DataFrame({'protein':list(proteins_idx.keys()), 
-                            'index':list(proteins_idx.values())})
+    prots_df = pd.DataFrame({'protein': list(proteins_idx.keys()),
+                            'index': list(proteins_idx.values())})
     prots_df.to_csv(os.path.join(args.outputdir, 'proteins.tsv'), sep='\t')
-    terms_df = pd.DataFrame({'term':list(terms_idx.keys()),
-                            'index':list(terms_idx.values())})
+    terms_df = pd.DataFrame({'term': list(terms_idx.keys()),
+                            'index': list(terms_idx.values())})
     terms_df.to_csv(os.path.join(args.outputdir, 'terms.tsv'), sep='\t')
 
     low, high = 1, 1000000
@@ -158,10 +181,10 @@ if args.compute_metrics:
 
     data = defaultdict(list)
     meas = measures.HX_py(pred, ic, 1234)
-    tell('computing OVERALL')
-    res = meas.compute_overall(gold_standard)
-    for m in res.keys():
-        data[m].append(res[m])
+    # tell('computing OVERALL')
+    # res = meas.compute_overall(gold_standard)
+    # for m in res.keys():
+    #     data[m].append(res[m])
 
     tell('computing per-gene')
     res = meas.compute_per_gene(gold_standard)
@@ -180,4 +203,4 @@ if args.compute_metrics:
         metrics.append((metric, values))
     metrics_df = pd.DataFrame(
         metrics, columns=['metric', 'value'])
-    metrics_df.to_pickle(os.path.join(args.outputdir,'metrics_df.pkl'))
+    metrics_df.to_pickle(os.path.join(args.outputdir, 'metrics_df.pkl'))
