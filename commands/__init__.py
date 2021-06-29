@@ -68,3 +68,9 @@ def extract_seeds(args):
     from commands.ExtractSeeds import ExtractSeeds
     e = ExtractSeeds(args)
     e.run()
+
+
+def top_predictions(args):
+    from commands.TopPredictions import TopPredictions
+    t = TopPredictions(args)
+    r.run()

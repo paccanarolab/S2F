@@ -37,7 +37,7 @@ class Combine(FancyApp.FancyApp):
         self.tell('parsing seed file...')
         self.seed = self.get_seed_similarity()
         comb = combination.Combination(self.proteins, self.collection,
-                                       self.homology, self.seed)
+                                       self.homology, self.seed, tau=self.seed_threshold)
         comb.compute_graph()
         self.tell('writing output file:', self.output)
         comb.write_graph(self.output)

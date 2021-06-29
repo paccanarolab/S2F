@@ -9,13 +9,14 @@ from Utils import Utilities
 
 class Combination(Graph):
 
-    def __init__(self, proteins, collection, homology, seed):
+    def __init__(self, proteins, collection, homology, seed, tau=0.2):
         super(Combination, self).__init__()
         self.combined = None
         self.proteins = proteins
         self.collection = collection
         self.homology = homology
         self.seed = seed
+        self.tau = tau
 
     def get_graph(self, **kwargs):
         return Graph.to_sparse_matrix(self.combined.T)
@@ -79,7 +80,7 @@ class Combination(Graph):
         self.tell('Building combination target...')
         s = self.seed.tocsc()
         s = s/s.max()
-        binarize(s, threshold=0.2, copy=False)
+        binarize(s, threshold=self.tau, copy=False)
         idx = np.asarray(s.sum(axis=0) > 0)
         t = s[:, idx[0]]
 

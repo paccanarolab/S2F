@@ -1,10 +1,8 @@
 """
-
 S2F - Main Script
 
 This is the main entry point for S2F, all the commands can be run
 by running this script using python 3.X
-
 """
 
 import argparse
@@ -197,7 +195,7 @@ if __name__ == '__main__':
                                'combiantion with `--output-dir`',
                           required=True)
     homology.add_argument('--cpu',
-                          help='Number of CPUs to use for ' 
+                          help='Number of CPUs to use for '
                                'parallelisable computations',
                           default='infer')
     combine = subparsers.add_parser(
@@ -390,6 +388,24 @@ if __name__ == '__main__':
                                help='The alias that was used with the '
                                     'corresponidng prediction directory',
                                required=True)
+
+    top_predictions = subparsers.add_parser(
+        'top-predictions',
+        description='Extract the top prediction from a TSV file',
+        help='top-predictions command'
+    )
+    top_predictions.set_defaults(func=commands.top_predictions)
+    top_predictions.add_argument('--prediction-file',
+                                 help='Path to a prediction directory, these are'
+                                      ' located under the `output` folder in a '
+                                      'regular installation',
+                                 required=True)
+    top_predictions.add_argument('--N',
+                                 help='the number of predictions that will be saved',
+                                 required=True)
+    top_predictions.add_argument('--output',
+                                 help='Path to the output file',
+                                 required=True)
 
     args = parser.parse_args()
     if args.subcommand == 'predict':
