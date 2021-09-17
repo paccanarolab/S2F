@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/190786075.svg)](https://zenodo.org/badge/latestdoi/190786075)
+
 # S2F (Sequence to Function)
 
 A protein function prediction tool that takes only the sequences as input
