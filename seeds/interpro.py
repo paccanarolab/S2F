@@ -42,8 +42,11 @@ class InterProSeed(Seed):
             if len(fields) >= 14:
                 if method not in ['seg', 'coil']:
                     terms = fields[13].strip()
+                    if terms == '-':
+                        continue
                     if len(terms) > 0:
                         terms = terms.split('|')
+
                         for t in terms:
                             if method in methods.keys():
                                 methods[method]['GO ID'].append(t)
