@@ -6,6 +6,7 @@ from scipy import sparse
 
 from seeds import Seed
 from Utils import ColourClass, Utilities
+from Utils.HmmerTbloutParser import HmmerTbloutFile
 
 
 class HMMerSeed(Seed):
@@ -71,28 +72,31 @@ class HMMerSeed(Seed):
                                          blacklist=self.blacklist)
             self.tell('Caching GOA annotations')
             goa = self.go.get_annotations('GOA')
-            evalue_fp = open(self.evalue_file, 'w')
             self.tell('Writing evalue file')
-            for line in open(self.hmmer):
-                if line.startswith('#'):
-                    continue
-                fields = line.strip().split()
-                target = fields[0]
-                query = fields[2]
+            hmmer_parser = HmmerTbloutFile(self.hmmer)
+            data = {k:[] for k in ['target', 'query', 'evalue']}
+            for h in hmmer_parser:
+                target = h.target_name
+                query = h.query_name
                 if self.protein_format == 'uniprot':
-                    target = Utilities.extract_uniprot_accession(target) 
                     query = Utilities.extract_uniprot_accession(query) 
-                evalue = fields[4]
-
-                if '|' in target:
-                    target = target.split('|')[1]
-                goa_target = goa[goa['Protein'] == target]
-                if len(goa_target) > 0:
-                    evalue_fp.write(query + '\t' + target +
-                                           '\t' + evalue + '\t')
-                    evalue_fp.write('\t'.join(
-                        goa_target['GO ID'].unique()))
-                    evalue_fp.write('\n')
-            evalue_fp.close()
+                target = Utilities.extract_uniprot_accession(target)
+                data['target'].append(target)
+                data['query'].append(query)
+                data['evalue'].append(h.e_value)
+            hmmer_df = pd.DataFrame(data)
+            del data
+            m = hmmer_df.merge(goa[['Protein', 'GO ID']], 
+                               left_on='target', 
+                               right_on='Protein')[['target', 
+                                                    'query', 
+                                                    'evalue', 
+                                                    'GO ID']]
+            m = m.groupby(['query', 'target', 'evalue'], as_index = False).agg({'GO ID': '\t'.join})
+            # the line below can be a bit slower than aggregating a list of GO terms in pandas
+            # but it generates way fewer empty columns
+            m['write'] = x.apply(lambda r: '\t'.join(r.dropna().astype(str).values), axis=1)
+            m['write'].to_csv(self.evalue_file, index=False, header=False)
+            
         else:
             self.tell('evalue file found, skipping computation')
