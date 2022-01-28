@@ -72,7 +72,7 @@ class HMMerSeed(Seed):
                                          blacklist=self.blacklist)
             self.tell('Caching GOA annotations')
             goa = self.go.get_annotations('GOA')
-            self.tell('Writing evalue file')
+            self.tell('Parsing HMMER file')
             hmmer_parser = HmmerTbloutFile(self.hmmer)
             data = {k:[] for k in ['target', 'query', 'evalue']}
             for h in hmmer_parser:
@@ -86,6 +86,7 @@ class HMMerSeed(Seed):
                 data['evalue'].append(h.e_value)
             hmmer_df = pd.DataFrame(data)
             del data
+            self.tell('Transferring function from GOA')
             m = hmmer_df.merge(goa[['Protein', 'GO ID']], 
                                left_on='target', 
                                right_on='Protein')[['target', 
@@ -95,7 +96,9 @@ class HMMerSeed(Seed):
             m = m.groupby(['query', 'target', 'evalue'], as_index = False).agg({'GO ID': '\t'.join})
             # the line below can be a bit slower than aggregating a list of GO terms in pandas
             # but it generates way fewer empty columns
-            m['write'] = x.apply(lambda r: '\t'.join(r.dropna().astype(str).values), axis=1)
+            self.tell('Preparing evalue file')
+            m['write'] = m.apply(lambda r: '\t'.join(r.dropna().astype(str).values), axis=1)
+            self.tell('Writing evalue file')
             m['write'].to_csv(self.evalue_file, index=False, header=False)
             
         else:
