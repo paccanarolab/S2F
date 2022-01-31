@@ -88,7 +88,6 @@ class HmmerTbloutFile(object):
             if not line or line[0] == '#':
                 continue
             try:
-                line = line.strip()
                 yield HmmerTbloutLine.from_line(line)
             except TypeError as ex:
                 raise SyntaxError("cannot parse HMMER line", ln+1)
