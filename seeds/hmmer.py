@@ -64,6 +64,19 @@ class HMMerSeed(Seed):
                                  shape=(len(self.proteins),
                                         len(self.terms)))
 
+    def _get_hmmer_scores(self):
+        data = {k:[] for k in ['target', 'query', 'evalue']}
+        for h in HmmerTbloutFile(self.hmmer):
+            target = h.target_name
+            query = h.query_name
+            if self.protein_format == 'uniprot':
+                query = Utilities.extract_uniprot_accession(query) 
+            target = Utilities.extract_uniprot_accession(target)
+            data['target'].append(target)
+            data['query'].append(query)
+            data['evalue'].append(h.e_value)
+        return pd.DataFrame(data)
+        
     def process_output(self, **kwargs):
         self.evalue_file = kwargs.get('evalue_file', self.evalue_file)
         if not os.path.exists(self.evalue_file):
@@ -73,19 +86,7 @@ class HMMerSeed(Seed):
             self.tell('Caching GOA annotations')
             goa = self.go.get_annotations('GOA')
             self.tell('Parsing HMMER file')
-            hmmer_parser = HmmerTbloutFile(self.hmmer)
-            data = {k:[] for k in ['target', 'query', 'evalue']}
-            for h in hmmer_parser:
-                target = h.target_name
-                query = h.query_name
-                if self.protein_format == 'uniprot':
-                    query = Utilities.extract_uniprot_accession(query) 
-                target = Utilities.extract_uniprot_accession(target)
-                data['target'].append(target)
-                data['query'].append(query)
-                data['evalue'].append(h.e_value)
-            hmmer_df = pd.DataFrame(data)
-            del data
+            hmmer_df = self._get_hmmer_scores()
             self.tell('Transferring function from GOA')
             m = hmmer_df.merge(goa[['Protein', 'GO ID']], 
                                left_on='target', 

@@ -38,53 +38,46 @@ __version__ = "0.1"
 
 __all__ = ["HmmerTbloutLine", "HmmerTbloutFile"]
 
+from dataclasses import dataclass
+from gzip import GzipFile
+
+@dataclass
 class HmmerTbloutLine(object):
     
-    __slots__ = ["target_name", "target_accession", "query_name",
-                 "query_accession", "e_value", "score", "bias",
-                 "e_value_domain", "score_domain", "bias_domain",
-                 "exp", "reg", "clu", "ov", "env", "dom", "rep",
-                 "inc", "description_of_target"]
+    target_name: str
+    target_accession: str
+    query_name: str
+    query_accession: str
+    e_value: float
+    score: float
+    bias: float
+    e_value_domain: float
+    score_domain: float
+    bias_domain: float
+    exp: float
+    reg: float
+    clu: float
+    ov: float
+    env: float
+    dom: float
+    rep: float
+    inc: float
+    description_of_target: str
     
-    def __init__(self, *args, **kwds):
-        """Constructs an annotation. Use keyword arguments to specify the
-        values of the different attributes. If you use positional arguments,
-        the order of the arguments must be the same as they are in the HMMER 
-        tblout file. No syntax checking is done on the values entered"""
-        if len(args) == 1 and not kwds:
-            args = args[0].strip().split(maxsplit=len(self.__slots__))
-        for (name, value) in zip(self.__slots__, args):
-            setattr(self, name, value)
-        for name, value in kwds.items():
-            setattr(self, name, kwds[value])
-        for name in self.__slots__:
-            if not hasattr(self, name):
-                setattr(self, name, "")
+    @staticmethod
+    def from_line(line):
+        """Constructs an annotation from a line"""
+        args = line.strip().split(maxsplit=18)
+        for i in range(4, 19):
+            args[i] = float(args[i])
         self._polish_attributes()
-        
-    def _polish_attributes(self):
-        """Ensures that the atributes are of the right type"""
-        self._ensure_float("e_value")
-        self._ensure_float("score")
-        self._ensure_float("bias")
-        self._ensure_float("e_value_domain")
-        self._ensure_float("score_domain")
-        self._ensure_float("bias_domain")
+        return HmmerTbloutLine(*args)
 
-    def _ensure_float(self, attr):
-        """Ensures that a given attribute is a float and not a string"""
-        value = getattr(self, attr)
-        if not isinstance(value, float):
-            if value == "":
-                setattr(self, attr, 0)
-            else:
-                setattr(self, attr, float(value))
                 
 class HmmerTbloutFile(object):
     def __init__(self, fp):
         if isinstance(fp, str):
             if fp[-3:] == ".gz":
-                from gzip import GzipFile
                 self.fp = GzipFile(fp)
             else:
                 self.fp = open(fp)
@@ -94,15 +87,14 @@ class HmmerTbloutFile(object):
 
         
     def annotations(self):
-        for line in self.fp:
-            self.lineno += 1
+        for lineno, line in enumerate(self.fp):
             if not line or line[0] == '#':
                 continue
             try:
                 line = line.strip()
-                yield HmmerTbloutLine(line)
+                yield HmmerTbloutLine.from_line(line)
             except TypeError as ex:
-                raise SyntaxError("cannot parse HMMER line", self.lineno)
+                raise SyntaxError("cannot parse HMMER line", lineno+1)
         
     def __iter__(self):
         return self.annotations()
