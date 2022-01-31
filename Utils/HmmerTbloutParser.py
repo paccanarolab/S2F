@@ -70,7 +70,6 @@ class HmmerTbloutLine(object):
         args = line.strip().split(maxsplit=18)
         for i in range(4, 19):
             args[i] = float(args[i])
-        self._polish_attributes()
         return HmmerTbloutLine(*args)
 
                 
@@ -83,18 +82,16 @@ class HmmerTbloutFile(object):
                 self.fp = open(fp)
         else:
             self.fp = fp
-        self.lineno = 0
-
         
     def annotations(self):
-        for lineno, line in enumerate(self.fp):
+        for ln, line in enumerate(self.fp):
             if not line or line[0] == '#':
                 continue
             try:
                 line = line.strip()
                 yield HmmerTbloutLine.from_line(line)
             except TypeError as ex:
-                raise SyntaxError("cannot parse HMMER line", lineno+1)
+                raise SyntaxError("cannot parse HMMER line", ln+1)
         
     def __iter__(self):
         return self.annotations()
