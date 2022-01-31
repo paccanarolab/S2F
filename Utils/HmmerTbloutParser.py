@@ -68,7 +68,7 @@ class HmmerTbloutLine(object):
     def from_line(line):
         """Constructs an annotation from a line"""
         args = line.strip().split(maxsplit=18)
-        for i in range(4, 19):
+        for i in range(4, 18):
             args[i] = float(args[i])
         return HmmerTbloutLine(*args)
 
