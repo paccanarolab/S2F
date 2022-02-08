@@ -163,54 +163,69 @@ class Predict(FancyApp.FancyApp):
         # 2. Exract a list of terms and proteins
         self.make_indices()
         # 3. run (or reuse) interpro
-        ip_seed = self.run_interpro()
+        self.check_progress()
+        if self.load_ip_seed:
+            ip_seed = self.run_interpro()
+        else:
+            ip_seed = None
         # 4. run (or reuse) hmmer
-        hmmer_seed = self.run_hmmer()
+        if self.load_hmmer_seed:
+            hmmer_seed = self.run_hmmer()
+        else:
+            hmemr_seed = None
         # 5. run (or reuse) graph collection
-        graph_collection = self.run_graph_collection()
-        for k, g in graph_collection.items():
-            sparse.save_npz(os.path.join(self.output_dir,
-                                         k+'_collection.npz'),
-                            g)
-        # 5. run (or reuse) homology graph
-        graph_homology = self.run_graph_homology()
-        sparse.save_npz(os.path.join(self.output_dir, 'homology.npz'),
-                        graph_homology)
-        # 6. GOA clamp if provided
+        if self.load_graph_collection:
+            graph_collection = self.run_graph_collection()
+            if self.write_collection:
+                for k, g in graph_collection.items():
+                    sparse.save_npz(os.path.join(self.output_dir,
+                                                k+'_collection.npz'),
+                                    g)
+        else:
+            graph_collection = None
+        # 6. run (or reuse) homology graph
+        if self.load_homology_graph:
+            graph_homology = self.run_graph_homology()
+            sparse.save_npz(os.path.join(self.output_dir, 'homology.npz'),
+                            graph_homology)
+        else:
+            graph_homology = None
+        # 7. GOA clamp if provided
         if os.path.exists(self.goa_clamp):
             self.load_clamp()
             self.tell('Clamping InterPro seed...')
             ip_seed = self.clamp(ip_seed)
             self.tell('Clamping HMMER seed...')
             hmmer_seed = self.clamp(hmmer_seed)
-        # 7. graph combination
-        combined_graph = self.combine_graphs(graph_collection,
-                                             graph_homology,
-                                             ip_seed)
-        # 8. prepare diffusion kernel
-        ip_diff_file = os.path.join(self.output_dir, 'ip_seed.diffusion')
-        hmmer_diff_file = os.path.join(self.output_dir, 'hmmer_seed.diffusion')
-        if os.path.exists(ip_diff_file) and os.path.exists(hmmer_diff_file):
-            self.tell('Diffusion files found, skipping computation...')
-            ip_diff = sparse.load_npz(ip_diff_file + '.npz')
-            hmmer_diff = sparse.load_npz(hmmer_diff_file + '.npz')
+        # 8. graph combination
+        if self.load_combined_graph:
+            combined_graph = self.combine_graphs(graph_collection,
+                                                graph_homology,
+                                                ip_seed)
         else:
+            combined_graph = None
+        # 9. prepare diffusion kernel
+        if self.calculate_diffusion:
             kernel_params = {'lambda': 0.1}
             diff = S2FLabelPropagation(combined_graph,
                                        self.proteins,
                                        self.terms)
             diff.compute_kernel(**kernel_params)
-            # 9. diffuse interpro
+            # 10. diffuse interpro
             self.tell('Diffusing InterPro seed')
             ip_diff = diff.diffuse(ip_seed)
-            sparse.save_npz(ip_diff_file + '.npz', ip_diff)
-            diff.write_results(ip_diff_file)
-            # 10. diffuse hmmer
+            sparse.save_npz(self.ip_diff_file + '.npz', ip_diff)
+            diff.write_results(self.ip_diff_file)
+            # 11. diffuse hmmer
             self.tell('Diffusing HMMER seed')
             hmmer_diff = diff.diffuse(hmmer_seed)
-            sparse.save_npz(hmmer_diff_file + '.npz', hmmer_diff)
-            diff.write_results(hmmer_diff_file)
-        # 11. output combination
+            sparse.save_npz(self.hmmer_diff_file + '.npz', hmmer_diff)
+            diff.write_results(self.hmmer_diff_file)
+        else:
+            self.tell('Diffusion files found, skipping computation...')
+            ip_diff = sparse.load_npz(self.ip_diff_file + '.npz')
+            hmmer_diff = sparse.load_npz(self.hmmer_diff_file + '.npz')
+        # 12. output combination
         if os.path.exists(self.goa_clamp):
             self.tell('Clamping diffused InterPro')
             ip_diff = self.clamp(ip_diff)
@@ -222,6 +237,48 @@ class Predict(FancyApp.FancyApp):
         self.tell('Saving prediction to file')
         self.write_prediction(os.path.join(self.output_dir, 'prediction.df'))
 
+    def check_progress(self):
+        self.ip_seed_file = os.path.join(self.seed_dir_IP, self.alias + '.seed.npz')
+        self.ip_diff_file = os.path.join(self.output_dir, 'ip_seed.diffusion')
+        
+        self.hmmer_seed_file = os.path.join(self.seed_dir_H, self.alias + '.seed.npz')
+        self.hmmer_evalue_file = os.path.join(self.seed_dir_H, self.alias + '.evalue')
+        self.hmmer_diff_file = os.path.join(self.output_dir, 'hmmer_seed.diffusion')
+        
+        self.string_dir = os.path.join(self.installation_directory,
+                                       'data/STRINGSequences')
+        self.core_ids = os.path.join(self.installation_directory, 'data/coreIds')
+        self.orthologs_dir = os.path.join(self.installation_directory, 'orthologs')
+        self.graphs_dir = os.path.join(self.installation_directory,
+                                       'graphs/collection')
+
+        self.combined_graph_filename = os.path.join(self.combination_dir,
+                                                    self.alias)
+        self.combined_graph_sparse_filename = self.combined_graph_filename + '.npz'
+
+        # we assume everything was done
+        self.load_ip_seed = False
+        self.load_hmmer_seed = False
+        self.load_graph_collection = False
+        self.load_homology_graph = False
+        self.load_combined_graph = False
+        self.calculate_diffusion = False
+        # the strategy is to check from latest to earliest in order to load
+        # only what we need.
+        if os.path.exists(self.ip_diff_file) and os.path.exists(self.hmmer_diff_file):
+            self.calculate_diffusion = False
+            return
+        else:
+            self.calculate_diffusion = True
+            self.load_ip_seed = True
+            self.load_hmmer_seed = True
+            self.load_combined_graph = True
+            if os.path.exists(self.combined_graph_filename):
+                return
+            else:
+                self.load_homology_graph = True
+                self.load_graph_collection = True
+        
     def write_prediction(self, filename):
         Diffusion._write_results(self.prediction, self.proteins, self.terms,
                                  filename)
@@ -269,8 +326,7 @@ class Predict(FancyApp.FancyApp):
         return self.combine_interpro()
 
     def combine_interpro(self):
-        seed_file = os.path.join(self.seed_dir_IP, self.alias + '.seed.npz')
-        if not os.path.exists(seed_file):
+        if not os.path.exists(self.ip_seed_file):
             self.tell('Building InterPro seed file')
             interpro_seed = interpro.InterProSeed(self.interpro_output,
                                                   self.proteins,
@@ -282,10 +338,10 @@ class Predict(FancyApp.FancyApp):
             for k, s in methods.items():
                 s.to_pickle(os.path.join(self.output_dir, 'ipseed_'+k))
             seed = interpro_seed.get_seed()
-            sparse.save_npz(seed_file, seed)
+            sparse.save_npz(self.ip_seed_file, seed)
         else:
             self.tell('InterPro seed file found')
-            seed = sparse.load_npz(seed_file)
+            seed = sparse.load_npz(self.ip_seed_file)
         return seed
 
     def run_hmmer(self):
@@ -308,9 +364,7 @@ class Predict(FancyApp.FancyApp):
         return self.build_hmeer_seed()
 
     def build_hmeer_seed(self):
-        seed_file = os.path.join(self.seed_dir_H, self.alias + '.seed.npz')
-        evalue_file = os.path.join(self.seed_dir_H, self.alias + '.evalue')
-        if not os.path.exists(seed_file):
+        if not os.path.exists(self.hmmer_seed_file):
             self.tell('Building HMMer seed file')
             hmmer_seed = hmmer.HMMerSeed(self.hmmer_output, self.proteins,
                                          self.terms, self.go,
@@ -318,12 +372,12 @@ class Predict(FancyApp.FancyApp):
                                          self.filtered_goa, 
                                          self.fasta_id_parser
                                          )
-            hmmer_seed.process_output(evalue_file=evalue_file)
+            hmmer_seed.process_output(evalue_file=self.hmmer_evalue_file)
             seed = hmmer_seed.get_seed()
-            sparse.save_npz(seed_file, seed)
+            sparse.save_npz(self.hmmer_seed_file, seed)
         else:
             self.tell('HMMer seed file found, skipping computation...')
-            seed = sparse.load_npz(seed_file)
+            seed = sparse.load_npz(self.hmmer_seed_file)
         return seed
 
     def get_hmmer_blacklist(self):
@@ -336,15 +390,9 @@ class Predict(FancyApp.FancyApp):
         return None
 
     def run_graph_collection(self):
-        string_dir = os.path.join(self.installation_directory,
-                                  'data/STRINGSequences')
-        core_ids = os.path.join(self.installation_directory, 'data/coreIds')
-        orthologs_dir = os.path.join(self.installation_directory, 'orthologs')
-        graphs_dir = os.path.join(self.installation_directory,
-                                  'graphs/collection')
-        col = collection.Collection(self.fasta, self.proteins, string_dir,
-                                    self.string_links, core_ids,
-                                    self.output_dir, orthologs_dir, graphs_dir,
+        col = collection.Collection(self.fasta, self.proteins, self.string_dir,
+                                    self.string_links, self.core_ids,
+                                    self.output_dir, self.orthologs_dir, self.graphs_dir,
                                     self.alias, self.cpu,
                                     self.get_transfer_blacklist(),
                                     1e-6, 80.0, 60.0, self.fasta_id_parser)
@@ -397,19 +445,16 @@ class Predict(FancyApp.FancyApp):
                 self.clamp_matrix.multiply(clamp_bigger))
 
     def combine_graphs(self, graph_collection, graph_homology, ip_seed):
-        combined_graph_filename = os.path.join(self.combination_dir,
-                                               self.alias)
-        combined_graph_sparse_filename = combined_graph_filename + '.npz'
-        if not os.path.exists(combined_graph_filename):
+        if not os.path.exists(self.combined_graph_filename):
             comb = combination.Combination(self.proteins, graph_collection,
                                            graph_homology, ip_seed)
             comb.compute_graph()
-            comb.write_graph(combined_graph_filename)
+            comb.write_graph(self.combined_graph_filename)
             graph = comb.get_graph()
-            sparse.save_npz(combined_graph_sparse_filename, graph)
+            sparse.save_npz(self.combined_graph_sparse_filename, graph)
         else:
             self.tell('found combined graph, skipping comptuation')
-            graph = sparse.load_npz(combined_graph_sparse_filename)
+            graph = sparse.load_npz(self.combined_graph_sparse_filename)
         graph = Graph.fill_lower_triangle(graph)
         return graph
 
