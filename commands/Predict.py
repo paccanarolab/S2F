@@ -67,6 +67,9 @@ class Predict(FancyApp.FancyApp):
             self.unattended_mode = run_conf.getboolean('functions',
                                                        'unattended',
                                                        fallback=False)
+            self.write_collection = run_conf.getboolean('functions',
+                                                       'write_collection',
+                                                       fallback=False)
             self.fasta_id_parser = run_conf.get('functions',
                                                        'fasta_id_parser',
                                                        fallback='uniprot')
@@ -93,6 +96,7 @@ class Predict(FancyApp.FancyApp):
 
             self.goa_clamp = os.path.expanduser(args.goa_clamp)
             self.unattended_mode = args.unattended is True
+            self.write_collection = args.write_collection is True
             self.fasta_id_parser = args.fasta_id_parser
 
         self.installation_directory = os.path.expanduser(

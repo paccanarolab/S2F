@@ -88,6 +88,10 @@ if __name__ == '__main__':
                               'all configurations will be accepted without '
                               'prompting the user.',
                          action='store_true')
+    predict.add_argument('--write-collection',
+                         help='Indicates that individual graph collections '
+                              'will be written to the output folder.'
+                         action='store_true')
     predict.add_argument('--fasta-id-parser',
                          help='Determines how the protein IDs will be handled',
                          default='uniprot', choices=['uniprot', 'entire_id'])
