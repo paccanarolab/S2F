@@ -232,14 +232,15 @@ class Install(FancyApp.FancyApp):
 
     def process_files(self):
         # look for the uncompressed version of every of the downloaded datasets
-        self.tell('Uncompressing STRING')
-        # STRING interactions
-        uncompressed_file = self.string_links.split('.gz')[0]
-        if not os.path.exists(uncompressed_file):
-            command = 'gunzip ' + self.string_links
-            subprocess.call(command, shell=True)
-        else:
-            self.tell('Found uncompressed STRING interactions file, skipping')
+
+        # # STRING interactions
+        # self.tell('Uncompressing STRING')
+        # uncompressed_file = self.string_links.split('.gz')[0]
+        # if not os.path.exists(uncompressed_file):
+        #     command = 'gunzip ' + self.string_links
+        #     subprocess.call(command, shell=True)
+        # else:
+        #     self.tell('Found uncompressed STRING file, skipping')
 
         core_ids_file = os.path.join(self.installation_directory,
                                      'data/coreIds')
@@ -349,8 +350,9 @@ class Install(FancyApp.FancyApp):
 
         # filter evidence codes using awk
         experimental_goa = self.uniprot_goa.split('.gz')[0] + '.exp'
-        command = "awk '$6~/" + '|'.join(self.evidence_codes)+"/{print $0}' " + \
-                  self.uniprot_goa.split('.gz')[0] + " > " + experimental_goa
+        command = "awk '$6~/" + '|'.join(self.evidence_codes)\
+                  + "/{print $0}' " + self.uniprot_goa.split('.gz')[0]\
+                  + " > " + experimental_goa
         subprocess.call(command, shell=True)
 
         num_lines = Utilities.line_count(experimental_goa)
@@ -360,9 +362,9 @@ class Install(FancyApp.FancyApp):
         fg = open(self.filtered_goa, 'w')
         i = 0
         for line in open(experimental_goa, 'r'):
-            i+=1
+            i += 1
             if i % 10000 == 0:
-                self.tell('Process:', i/num_lines*100.0,'%')
+                self.tell('Process:', i/num_lines*100.0, '%')
             if not line.startswith('!'):
                 fields = line.split('\t')
                 if fields[1] in ids:

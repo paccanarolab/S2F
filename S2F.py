@@ -90,7 +90,7 @@ if __name__ == '__main__':
                          action='store_true')
     predict.add_argument('--write-collection',
                          help='Indicates that individual graph collections '
-                              'will be written to the output folder.'
+                              'will be written to the output folder.',
                          action='store_true')
     predict.add_argument('--fasta-id-parser',
                          help='Determines how the protein IDs will be handled',
