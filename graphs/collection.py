@@ -243,57 +243,64 @@ class Collection(Graph):
             graph = {}
             first_line = True
             current_organism = -1
-            for line in open(self.string_links):
-                fields = line.strip().split()
-                if first_line:
-                    first_line = False
+            if self.string_links.endswith(".gz"):
+                import gzip
+                links_open = gzip.open
+            else:
+                links_open = open
 
-                    # identify the index of the interesting
-                    # graphs in the STRING file
-                    for i, field in enumerate(fields):
-                        if field in self.interesting_graphs:
-                            graph_index[field] = i
-                else:
-                    org_id = fields[0].split('.')[0]
+            with links_open(self.string_links, "rt") as links:
+                for line in links:
+                    fields = line.strip().split()
+                    if first_line:
+                        first_line = False
 
-                    # check if the current organism should be processed
-                    if org_id not in should_process.keys():
-                        should_process[org_id] =\
-                            self.should_be_processed(org_id)
+                        # identify the index of the interesting
+                        # graphs in the STRING file
+                        for i, field in enumerate(fields):
+                            if field in self.interesting_graphs:
+                                graph_index[field] = i
+                    else:
+                        org_id = fields[0].split('.')[0]
+
+                        # check if the current organism should be processed
+                        if org_id not in should_process.keys():
+                            should_process[org_id] =\
+                                self.should_be_processed(org_id)
+                            if not should_process[org_id]:
+                                self.tell('Ignoring organism', org_id)
                         if not should_process[org_id]:
-                            self.tell('Ignoring organism', org_id)
-                    if not should_process[org_id]:
-                        continue
+                            continue
 
-                    if current_organism == -1:
-                        current_organism = org_id
-                        graph = self.clean_graph()
-                    elif current_organism != org_id:
-                        # make a pandas from the string graph
-                        graph_df = pd.DataFrame.from_dict(graph)
-                        # keeping only the relevant links
-                        # (those with some information in at
-                        # least one of the models)
-                        condition = None
-                        for g in self.interesting_graphs:
-                            if condition is None:
-                                condition = graph_df[g] > 0
-                            else:
-                                condition |= graph_df[g] > 0
+                        if current_organism == -1:
+                            current_organism = org_id
+                            graph = self.clean_graph()
+                        elif current_organism != org_id:
+                            # make a pandas from the string graph
+                            graph_df = pd.DataFrame.from_dict(graph)
+                            # keeping only the relevant links
+                            # (those with some information in at
+                            # least one of the models)
+                            condition = None
+                            for g in self.interesting_graphs:
+                                if condition is None:
+                                    condition = graph_df[g] > 0
+                                else:
+                                    condition |= graph_df[g] > 0
 
-                        # transfer links
-                        self.process_graph(current_organism,
-                                           graph_df[condition])
+                            # transfer links
+                            self.process_graph(current_organism,
+                                               graph_df[condition])
 
-                        # clean graph and update current organism
-                        graph = self.clean_graph()
-                        current_organism = org_id
+                            # clean graph and update current organism
+                            graph = self.clean_graph()
+                            current_organism = org_id
 
-                    if should_process[org_id]:
-                        graph['protein 1'].append(fields[0])
-                        graph['protein 2'].append(fields[1])
-                        for g in self.interesting_graphs:
-                            graph[g].append(int(fields[graph_index[g]]))
+                        if should_process[org_id]:
+                            graph['protein 1'].append(fields[0])
+                            graph['protein 2'].append(fields[1])
+                            for g in self.interesting_graphs:
+                                graph[g].append(int(fields[graph_index[g]]))
 
             # we make sure we don't miss possible links from
             # the last organism in STRING

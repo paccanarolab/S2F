@@ -176,14 +176,14 @@ class Predict(FancyApp.FancyApp):
         if self.load_hmmer_seed:
             hmmer_seed = self.run_hmmer()
         else:
-            hmemr_seed = None
+            hmmer_seed = None
         # 5. run (or reuse) graph collection
         if self.load_graph_collection:
             graph_collection = self.run_graph_collection()
             if self.write_collection:
                 for k, g in graph_collection.items():
                     sparse.save_npz(os.path.join(self.output_dir,
-                                                k+'_collection.npz'),
+                                                 k+'_collection.npz'),
                                     g)
         else:
             graph_collection = None
@@ -204,8 +204,8 @@ class Predict(FancyApp.FancyApp):
         # 8. graph combination
         if self.load_combined_graph:
             combined_graph = self.combine_graphs(graph_collection,
-                                                graph_homology,
-                                                ip_seed)
+                                                 graph_homology,
+                                                 ip_seed)
         else:
             combined_graph = None
         # 9. prepare diffusion kernel
@@ -242,23 +242,31 @@ class Predict(FancyApp.FancyApp):
         self.write_prediction(os.path.join(self.output_dir, 'prediction.df'))
 
     def check_progress(self):
-        self.ip_seed_file = os.path.join(self.seed_dir_IP, self.alias + '.seed.npz')
-        self.ip_diff_file = os.path.join(self.output_dir, 'ip_seed.diffusion')
-        
-        self.hmmer_seed_file = os.path.join(self.seed_dir_H, self.alias + '.seed.npz')
-        self.hmmer_evalue_file = os.path.join(self.seed_dir_H, self.alias + '.evalue')
-        self.hmmer_diff_file = os.path.join(self.output_dir, 'hmmer_seed.diffusion')
-        
+        self.ip_seed_file = os.path.join(
+            self.seed_dir_IP, self.alias + '.seed.npz')
+        self.ip_diff_file = os.path.join(
+            self.output_dir, 'ip_seed.diffusion')
+
+        self.hmmer_seed_file = os.path.join(
+            self.seed_dir_H, self.alias + '.seed.npz')
+        self.hmmer_evalue_file = os.path.join(
+            self.seed_dir_H, self.alias + '.evalue')
+        self.hmmer_diff_file = os.path.join(
+            self.output_dir, 'hmmer_seed.diffusion')
+
         self.string_dir = os.path.join(self.installation_directory,
                                        'data/STRINGSequences')
-        self.core_ids = os.path.join(self.installation_directory, 'data/coreIds')
-        self.orthologs_dir = os.path.join(self.installation_directory, 'orthologs')
-        self.graphs_dir = os.path.join(self.installation_directory,
-                                       'graphs/collection')
+        self.core_ids = os.path.join(
+            self.installation_directory, 'data/coreIds')
+        self.orthologs_dir = os.path.join(
+            self.installation_directory, 'orthologs')
+        self.graphs_dir = os.path.join(
+            self.installation_directory, 'graphs/collection')
 
         self.combined_graph_filename = os.path.join(self.combination_dir,
                                                     self.alias)
-        self.combined_graph_sparse_filename = self.combined_graph_filename + '.npz'
+        self.combined_graph_sparse_filename =\
+            f"{self.combined_graph_filename}.npz"
 
         # we assume everything was done
         self.load_ip_seed = False
@@ -269,7 +277,8 @@ class Predict(FancyApp.FancyApp):
         self.calculate_diffusion = False
         # the strategy is to check from latest to earliest in order to load
         # only what we need.
-        if os.path.exists(self.ip_diff_file) and os.path.exists(self.hmmer_diff_file):
+        if os.path.exists(self.ip_diff_file) and os.path.exists(
+                self.hmmer_diff_file):
             self.calculate_diffusion = False
             return
         else:
@@ -282,7 +291,7 @@ class Predict(FancyApp.FancyApp):
             else:
                 self.load_homology_graph = True
                 self.load_graph_collection = True
-        
+
     def write_prediction(self, filename):
         Diffusion._write_results(self.prediction, self.proteins, self.terms,
                                  filename)
@@ -396,8 +405,8 @@ class Predict(FancyApp.FancyApp):
     def run_graph_collection(self):
         col = collection.Collection(self.fasta, self.proteins, self.string_dir,
                                     self.string_links, self.core_ids,
-                                    self.output_dir, self.orthologs_dir, self.graphs_dir,
-                                    self.alias, self.cpu,
+                                    self.output_dir, self.orthologs_dir,
+                                    self.graphs_dir, self.alias, self.cpu,
                                     self.get_transfer_blacklist(),
                                     1e-6, 80.0, 60.0, self.fasta_id_parser)
         col.compute_graph()
