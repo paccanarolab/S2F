@@ -199,9 +199,9 @@ class Collection(Graph):
         if self.collection is None:
             self.collection = valid_edges.drop(drop_cols, axis=1)
         else:
-            self.collection = self.collection.append(
-                                valid_edges.drop(drop_cols,
-                                                 axis=1), ignore_index=True)
+            self.collection = pd.concat(
+                [self.collection, valid_edges.drop(drop_cols, axis=1)],
+                ignore_index=True)
 
         self.tell('current collection has', self.collection.shape[0], 'edges')
         # TODO: rename "query" to "protein" for consistency
