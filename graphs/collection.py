@@ -277,6 +277,7 @@ class Collection(Graph):
                             graph = self.clean_graph()
                         elif current_organism != org_id:
                             # make a pandas from the string graph
+                            self.tell(f"DataFrame for {current_organism}")
                             graph_df = pd.DataFrame.from_dict(graph)
                             # keeping only the relevant links
                             # (those with some information in at
