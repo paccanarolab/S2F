@@ -21,7 +21,7 @@ ENV ENVIRONMENT prod
 
 # install system dependencies
 RUN apt-get update \
- && apt-get -y install netcat gcc libpq-dev g++ ncbi-blast+ hmmer curl less zip\
+ && apt-get -y install netcat gcc libpq-dev g++ ncbi-blast+ hmmer curl less zip default-jdk perl\
  && apt-get clean
 
 

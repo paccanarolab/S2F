@@ -295,6 +295,7 @@ class Collection(Graph):
                             # clean graph and update current organism
                             graph = self.clean_graph()
                             current_organism = org_id
+                            self.tell(f"Getting links for {current_organism}")
 
                         if should_process[org_id]:
                             graph['protein 1'].append(fields[0])
@@ -304,6 +305,7 @@ class Collection(Graph):
 
             # we make sure we don't miss possible links from
             # the last organism in STRING
+            self.tell("Processing last organism")
             if should_process[current_organism]:
                 # make a pandas from the string graph
                 graph_df = pd.DataFrame.from_dict(graph)
@@ -318,7 +320,7 @@ class Collection(Graph):
 
                 # transfer links
                 self.process_graph(current_organism, graph_df[condition])
-
+            self.tell("Finished with transfer, ordering...")
             Graph.assert_lexicographical_order(self.collection,
                                                p1='query1', p2='query2')
             self.collection.to_pickle(os.path.join(collection_file))
