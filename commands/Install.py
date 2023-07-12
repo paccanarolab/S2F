@@ -350,8 +350,9 @@ class Install(FancyApp.FancyApp):
 
         # filter evidence codes using awk
         experimental_goa = self.uniprot_goa.split('.gz')[0] + '.exp'
-        command = "awk '$6~/" + '|'.join(self.evidence_codes)\
-                  + "/{print $0}' " + self.uniprot_goa.split('.gz')[0]\
+        command = "awk 'BEGIN{FS=\"\t\"}($7 ~/"\
+                  + '|'.join(self.evidence_codes)\
+                  + "/){print $0}' " + self.uniprot_goa.split('.gz')[0]\
                   + " > " + experimental_goa
         subprocess.call(command, shell=True)
 
