@@ -10,6 +10,12 @@ def install(args):
     i.run()
 
 
+def transfer(args):
+    from commands.TransferInteractions import TransferInteractions
+    t = TransferInteractions(args)
+    t.run()
+
+
 def measures(args):
     from commands.Measures import Measures
     m = Measures(args)
