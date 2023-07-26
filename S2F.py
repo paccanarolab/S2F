@@ -188,10 +188,10 @@ if __name__ == '__main__':
         help='transfer command'
     )
     transfer.set_defaults(func=commands.transfer)
-    predict.add_argument('--run-config',
-                         help='path to the run configuration file ' +
-                              '(overrides all other arguments)',
-                         required=True)
+    transfer.add_argument('--run-config',
+                          help='path to the run configuration file ' +
+                          '(overrides all other arguments)',
+                          required=True)
     transfer.add_argument('--max-evalue',
                           help='Max evalue to consider for the transfer',
                           type=float,
