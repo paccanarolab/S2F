@@ -1,6 +1,6 @@
 import os
 import pandas as pd
-from Utils import ColourClass, Configuration, FancyApp
+from Utils import ColourClass, Configuration, FancyApp, Utilities
 from graphs.collection import Collection
 
 
@@ -45,6 +45,17 @@ class TransferInteractions(FancyApp.FancyApp):
             self.cpu = len(os.sched_getaffinity(0))
         else:
             self.cpu = int(self.cpu)
+
+        self.tell('Extracting list of proteins from fasta file')
+        if self.protein_format == 'uniprot':
+            fasta_id_parser = Utilities.keep_uniprot_accession
+        else:
+            fasta_id_parser = Utilities.keep_entire_prot_id
+        self.proteins = Utilities.extract_indices_from_fasta(
+            self.fasta,
+            processing_func=fasta_id_parser
+        )
+        self.proteins.to_pickle(os.path.join(self.output_dir, 'proteins.df'))
 
     def run(self):
         col = Collection(self.fasta, self.proteins, self.string_dir,
