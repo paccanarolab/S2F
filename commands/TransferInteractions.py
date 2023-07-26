@@ -38,6 +38,9 @@ class TransferInteractions(FancyApp.FancyApp):
         self.protein_format = run_conf.get('functions',
                                            'fasta_id_parser',
                                            fallback='uniprot')
+        self.cpu = os.path.expanduser(run_conf.get('configuration',
+                                                   'cpu',
+                                                   fallback='infer'))
         if self.cpu == 'infer':
             # https://docs.python.org/3/library/os.html#os.cpu_count
             self.cpu = len(os.sched_getaffinity(0))
