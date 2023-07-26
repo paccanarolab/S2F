@@ -181,6 +181,30 @@ if __name__ == '__main__':
                               'using only experimental evidence codes.',
                          default='experimental')
 
+    transfer = subparsers.add_parser(
+        'transfer',
+        description='Transfer interactions between the STRING'
+                    ' and the target organism',
+        help='transfer command'
+    )
+    transfer.set_defaults(func=commands.transfer)
+    predict.add_argument('--run-config',
+                         help='path to the run configuration file ' +
+                              '(overrides all other arguments)',
+                         required=True)
+    transfer.add_argument('--max-evalue',
+                          help='Max evalue to consider for the transfer',
+                          type=float,
+                          default=1e-6)
+    transfer.add_argument('--perc',
+                          help='Percent identity',
+                          type=float,
+                          default=80.0)
+    transfer.add_argument('--positives',
+                          help='Positives',
+                          type=float,
+                          default=60.0)
+
     homology = subparsers.add_parser(
         'homology',
         description='S2F homology: run homology similarity ' +
@@ -263,7 +287,7 @@ if __name__ == '__main__':
                          default={'lambda': 0.1}, type=json.loads)
     diffuse.add_argument('--kernel-output',
                          help='A path to a filename where the kernel is to be '
-                               'written in tab format, "no-output" by default',
+                              'written in tab format, "no-output" by default',
                          default='no-output')
     diffuse.add_argument('--output', help='Path to desired output file',
                          required=True)

@@ -1,0 +1,56 @@
+import os
+import pandas as pd
+from Utils import ColourClass, Configuration, FancyApp
+from graphs.collection import Collection
+
+
+class TransferInteractions(FancyApp.FancyApp):
+
+    def __init__(self, args):
+        super(TransferInteractions, self).__init__()
+        self.run_config = os.path.expanduser(args.run_config)
+        Configuration.load_run(self.run_config)
+        run_conf = Configuration.RUN_CONFIG
+        Configuration.load_configuration(self.config_file)
+        self.config_file = os.path.expanduser(
+            run_conf.get('configuration', 'config_file'))
+        self.colour = ColourClass.bcolors.BOLD_GREEN
+        self.alias = run_conf.get('configuration', 'alias')
+        self.fasta = os.path.expanduser(run_conf.get('configuration',
+                                                     'fasta'))
+        self.proteins = pd.read_pickle(args.proteins)
+        self.installation_directory = os.path.expanduser(
+            Configuration.CONFIG.get('directories', 'installation_directory'))
+        self.string_links = Configuration.CONFIG.get('databases',
+                                                     'string_links')
+        self.string_dir = os.path.join(self.installation_directory,
+                                       'data/STRINGSequences')
+        self.core_ids = os.path.join(
+            self.installation_directory, 'data/coreIds')
+        self.orthologs_dir = os.path.join(
+            self.installation_directory, 'orthologs')
+        self.graphs_dir = os.path.join(
+            self.installation_directory, 'graphs/collection')
+        self.output_dir = os.path.join(self.installation_directory,
+                                       'output', self.alias)
+        self.max_evalue = args.max_evalue
+        self.perc = args.perc
+        self.positives = args.positives
+        self.protein_format = run_conf.get('functions',
+                                           'fasta_id_parser',
+                                           fallback='uniprot')
+        self.interesting_graphs = args.interesting_graphs
+        if self.cpu == 'infer':
+            # https://docs.python.org/3/library/os.html#os.cpu_count
+            self.cpu = len(os.sched_getaffinity(0))
+        else:
+            self.cpu = int(self.cpu)
+
+    def run(self):
+        col = Collection(self.fasta, self.proteins, self.string_dir,
+                         self.string_links, self.core_ids, self.output_dir,
+                         self.orthologs_dir, self.graphs_dir, self.alias,
+                         self.cpu, None, self.max_evalue, self.perc,
+                         self.positives, self.protein_format,
+                         self.interesting_graphs)
+        col.compute_graph()

@@ -68,11 +68,11 @@ class Predict(FancyApp.FancyApp):
                                                        'unattended',
                                                        fallback=False)
             self.write_collection = run_conf.getboolean('functions',
-                                                       'write_collection',
-                                                       fallback=False)
+                                                        'write_collection',
+                                                        fallback=False)
             self.fasta_id_parser = run_conf.get('functions',
-                                                       'fasta_id_parser',
-                                                       fallback='uniprot')
+                                                'fasta_id_parser',
+                                                fallback='uniprot')
         else:
             self.config_file = os.path.expanduser(args.config_file)
 
