@@ -73,11 +73,12 @@ def compute_ortholog(fasta, db, string_fasta, string_db, out, out_dir, protein_f
                         'target_perc': infot['perc'],
                     }
                     index += 1
-        orth = pd.DataFrame.from_dict(orthologs_found, orient='index')
-        orth['max evalue'] = np.max(orth[['query_evalue', 'target_evalue']],
-                                    axis=1)
-        orth['pos'] = np.sqrt(orth['query_pi'] * orth['target_pi'])
-        orth.to_pickle(os.path.join(out_dir, out))
+        if index > 0:
+            orth = pd.DataFrame.from_dict(orthologs_found, orient='index')
+            orth['max evalue'] = np.max(orth[['query_evalue', 'target_evalue']],
+                                        axis=1)
+            orth['pos'] = np.sqrt(orth['query_pi'] * orth['target_pi'])
+            orth.to_pickle(os.path.join(out_dir, out))
         # remove temporary files
         os.remove(out_1)
         os.remove(out_2)
