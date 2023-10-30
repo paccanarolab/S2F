@@ -35,6 +35,8 @@ class Install(FancyApp.FancyApp):
                                                       'string_sequences')
             self.string_species = Configuration.CONFIG.get('databases',
                                                            'string_species')
+            self.string_core_only = Configuration.CONFIG.get(
+                    'databases', 'string_core_only')
             self.uniprot_sprot = Configuration.CONFIG.get('databases',
                                                           'uniprot_sprot')
             self.uniprot_goa = Configuration.CONFIG.get('databases',
@@ -62,6 +64,7 @@ class Install(FancyApp.FancyApp):
             self.string_links = args.string_links
             self.string_sequences = args.string_sequences
             self.string_species = args.string_species
+            self.string_core_only = args.string_core_only
             self.uniprot_sprot = args.uniprot_swissprot
             self.uniprot_goa = args.uniprot_goa
             # These parameters have to be inferred in the installation
@@ -279,7 +282,7 @@ class Install(FancyApp.FancyApp):
                         if fp:
                             fp.close()
                             fp = None
-                        if taxid in core_ids:
+                        if (taxid in core_ids) or (not self.string_core_only):
                             current_organism = taxid
                             fn = os.path.join(self.installation_directory,
                                               'data/STRINGSequences/' + taxid +
