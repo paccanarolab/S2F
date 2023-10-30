@@ -160,6 +160,10 @@ if __name__ == '__main__':
                               ' the installation script will attempt to '
                               'download it using the wget command.',
                          default='download')
+    install.add_argument("--string-core-only",
+                         help="Use this flag to restrict the database to only"
+                              " core species in STRING, and ignore periphery",
+                         action="store_true")
     install.add_argument('--uniprot-swissprot',
                          help='manually provide the path to the UniProt' +
                               'SwissProt sequences, it must be the full path' +
