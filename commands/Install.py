@@ -408,6 +408,7 @@ class Install(FancyApp.FancyApp):
             ('STRING interaction database:\t', self.string_links),
             ('STRING sequences database:\t', self.string_sequences),
             ('STRING species database:\t', self.string_species),
+            ('STRING core only:\t', self.string_core_only),
             ('UniProt SwissProt:\t\t', self.uniprot_sprot),
             ('UniProt GOA:\t\t\t', self.uniprot_goa)
         ]
