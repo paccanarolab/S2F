@@ -8,6 +8,7 @@ from scipy import sparse
 
 from graphs import Graph
 from Utils import ColourClass, FancyApp, Utilities
+from pathlib import Path
 
 
 def parse_blast(filename, protein_format):
@@ -91,7 +92,7 @@ class Collection(Graph):
     def __init__(self,
                  fasta, proteins, string_dir, string_links, core_ids,
                  output_dir, orthologs_dir, graphs_dir, alias, cpus, blacklist,
-                 max_evalue, perc, positives, protein_format,
+                 max_evalue, perc, positives, protein_format, string_core_only,
                  interesting_graphs=['neighborhood', 'experiments',
                                      'coexpression', 'textmining',
                                      'database']):
@@ -101,6 +102,7 @@ class Collection(Graph):
         self.string_dir = string_dir
         self.string_links = string_links
         self.core_ids = core_ids
+        self.string_core_only = string_core_only
         self.output_dir = output_dir
         self.graphs_dir = graphs_dir
         self.orthologs_dir = orthologs_dir
@@ -230,9 +232,17 @@ class Collection(Graph):
 
             self.tell('Computing Orthologs using', self.cpus, 'cores')
             params = []
-            for core_id in core_ids:
-                fasta = os.path.join(self.string_dir, core_id + '.faa')
-                out = self.alias + '_AND_' + core_id
+            # collect organisms
+            string_organisms = []
+            if self.string_core_only:
+                string_organisms = core_ids
+            else:
+                string_dir = Path(self.string_dir)
+                string_organisms = [fn.stem for fn in string_dir.glob("*.faa")]
+
+            for org_id in string_organisms:
+                fasta = os.path.join(self.string_dir, org_id + '.faa')
+                out = self.alias + '_AND_' + org_id
                 params.append([self.fasta, self.db, fasta, fasta, out,
                                self.orthologs_dir, self.protein_format])
             with Pool(self.cpus) as p:

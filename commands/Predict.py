@@ -113,6 +113,8 @@ class Predict(FancyApp.FancyApp):
                                                          'string_sequences')
         self.string_species = Configuration.CONFIG.get('databases',
                                                        'string_species')
+        self.string_core_only = Configuration.CONFIG.get('databases',
+                                                         'string_core_only')
         self.uniprot_sprot = Configuration.CONFIG.get('databases',
                                                       'uniprot_sprot')
         self.uniprot_goa = Configuration.CONFIG.get('databases',
