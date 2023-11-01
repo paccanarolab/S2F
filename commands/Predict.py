@@ -410,7 +410,8 @@ class Predict(FancyApp.FancyApp):
                                     self.output_dir, self.orthologs_dir,
                                     self.graphs_dir, self.alias, self.cpu,
                                     self.get_transfer_blacklist(),
-                                    1e-6, 80.0, 60.0, self.fasta_id_parser)
+                                    1e-6, 80.0, 60.0, self.fasta_id_parser,
+                                    self.string_core_only)
         col.compute_graph()
         return col.get_graph()
 
