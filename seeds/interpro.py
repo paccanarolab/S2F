@@ -38,7 +38,7 @@ class InterProSeed(Seed):
             method = fields[3].lower()
             prot = fields[0]
             if self.protein_format == 'uniprot':
-                prot = Utilities.extract_uniprot_accession(prot) 
+                prot = Utilities.extract_uniprot_accession(prot)
             if len(fields) >= 14:
                 if method not in ['seg', 'coil']:
                     terms = fields[13].strip()
@@ -48,13 +48,14 @@ class InterProSeed(Seed):
                         terms = terms.split('|')
 
                         for t in terms:
+                            go_id = t.split("(")[0]
                             if method in methods.keys():
-                                methods[method]['GO ID'].append(t)
+                                methods[method]['GO ID'].append(go_id)
                                 methods[method]['Protein'].append(prot)
                                 methods[method]['Score'].append(1)
                             else:
                                 self.methods.append(method)
-                                methods[method] = {'GO ID': [t],
+                                methods[method] = {'GO ID': [go_id],
                                                    'Protein': [prot],
                                                    'Score': [1]}
 
