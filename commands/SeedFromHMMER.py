@@ -17,7 +17,7 @@ class SeedFromHMMER(FancyApp.FancyApp):
         go = GeneOntology.GeneOntology(self.obo, verbose=True)
         go.build_structure()
         self.tell('Parsing the seed file...')
-        seeder = hmmer.HMMerSeed('', None, None, go, [], '')
+        seeder = hmmer.HMMerSeed('', None, None, go, [], '', 'uniprot')
         seeder.process_output(evalue_file=self.evalue_file)
         assignment = seeder.get_seed(seed_threshhold=self.threshold,
                                      return_pandas_assignment=True)
