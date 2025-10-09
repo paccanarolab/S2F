@@ -136,3 +136,6 @@ fabric.properties
 
 # Results data
 results/
+
+# seeds data
+ipr_seed/
