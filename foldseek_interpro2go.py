@@ -12,7 +12,7 @@ import pandas as pd
 from pathlib import Path
 from collections import defaultdict, Counter
 from dataclasses import dataclass
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional, Set, Tuple
 from GOTool import GeneOntology
 
 
@@ -413,7 +413,7 @@ def normalise_query_identifier(query_id: str) -> str:
 
 def ensure_structure_for_fasta(
     fasta_path: Path, mode: str, structures_dir: Path, search_recursive: bool = False
-) -> List[Path]:
+) -> Tuple[List[Path], List[FastaSeq]]:
     """
     Ensure a structure file exists for each sequence in a FASTA.
 
@@ -422,9 +422,14 @@ def ensure_structure_for_fasta(
       - AlphaFold names: AF-<ACC>-F*-model*.{pdb|cif}[.gz]
 
     If search_recursive=True, use rglob under structures_dir.
+
+    Returns:
+        Tuple[List[Path], List[FastaSeq]]: located structure paths and the sequences
+        still missing structures (for potential ProstT5 fallback).
     """
     seqs = read_fasta(fasta_path)
     out_paths: List[Path] = []
+    missing: List[FastaSeq] = []
     globber = structures_dir.rglob if search_recursive else structures_dir.glob
 
     if mode == "existing":
@@ -456,13 +461,10 @@ def ensure_structure_for_fasta(
                             break
 
             if hit is None:
-                raise FileNotFoundError(
-                    f"No structure found for {rec.name}. "
-                    f"Searched exact basenames and AlphaFold patterns in {structures_dir} "
-                    f"(recursive={search_recursive})."
-                )
+                missing.append(rec)
+                continue
             out_paths.append(hit)
-        return out_paths
+        return out_paths, missing
 
     if mode == "colabfold":
         colabfold = shutil.which("colabfold_batch")
@@ -498,7 +500,7 @@ def ensure_structure_for_fasta(
                     f"No PDB produced by ColabFold for sequence {rec.name}."
                 )
             out_paths.append(candidates[0])
-        return out_paths
+        return out_paths, []
 
     raise ValueError(f"Unsupported structure mode: {mode}")
 
@@ -692,70 +694,97 @@ def main():
     print("[INFO] Loading InterPro2GO mappings...")
     ipr2go = parse_interpro2go(args.interpro2go)
 
-    # Prepare list of query structure files
-    # FASTA inputs if any
-    query_inputs: List[Path] = []  # type: ignore
-    all_hits_per_query = defaultdict(list)
+    # Prepare query inputs (structures + optional ProstT5 fallback)
+    print("[INFO] Preparing query inputs...")
+    query_structures: List[Path] = []
+    fallback_sequences: List[FastaSeq] = []
 
-    # Structure inputs if any
-    query_structures: List[Path] = []  # type: ignore
-    query_names: List[str] = []  # type: ignore
-
-    if args.prostt5_model:
-        print("[INFO] ProstT5 FASTA→3Di mode enabled.")
-        if not args.fastas:
-            sys.exit(
-                "When --prostt5-model is given, provide FASTA(s) via --fastas."
-            )  # noqa
-        # Each FASTA file is contains all of the query sequences per organism
-        # (to be processed individually later)
-        for fa in args.fastas:
-            p = Path(fa)
-            if not p.exists():
-                sys.exit(f"FASTA not found: {p}")
-            query_inputs.append(p)
-            query_names.append(p.stem)
+    if args.query_structures:
+        for p in args.query_structures:
+            print(f"[INFO] Using provided structure: {p}")
+            pp = Path(p)
+            if not pp.exists():
+                sys.exit(f"Query structure not found: {pp}")
+            query_structures.append(pp)
     else:
-        print("[INFO] Preparing query structures...")
-        if args.query_structures:
-            for p in args.query_structures:
-                print(f"[INFO] Using provided structure: {p}")
-                pp = Path(p)
-                if not pp.exists():
-                    sys.exit(f"Query structure not found: {pp}")
-                query_structures.append(pp)
-                query_names.append(pp.stem)
-        else:
-            # From FASTAs, ensure structures
-            for fasta in args.fastas:
-                print(f"[INFO] Processing FASTA: {fasta}")
-                fasta_path = Path(fasta)
-                if not fasta_path.exists():
-                    sys.exit(f"FASTA not found: {fasta_path}")
-                try:
-                    struct_paths = ensure_structure_for_fasta(
-                        fasta_path,
-                        args.structure_mode,
-                        args.structures_dir,
-                        search_recursive=args.search_recursive,
-                    )
-                except Exception as e:
-                    sys.exit(str(e))
-                for sp in struct_paths:
-                    query_structures.append(sp)
-                    query_names.append(sp.stem)
+        if not args.fastas:
+            sys.exit("No FASTA inputs provided; nothing to process.")
+        for fasta in args.fastas:
+            print(f"[INFO] Processing FASTA: {fasta}")
+            fasta_path = Path(fasta)
+            if not fasta_path.exists():
+                sys.exit(f"FASTA not found: {fasta_path}")
+            try:
+                struct_paths, missing = ensure_structure_for_fasta(
+                    fasta_path,
+                    args.structure_mode,
+                    args.structures_dir,
+                    search_recursive=args.search_recursive,
+                )
+            except Exception as e:
+                sys.exit(str(e))
+            query_structures.extend(struct_paths)
+            if missing:
+                fallback_sequences.extend(missing)
 
-    # 1) Run Foldseek for each query
-    # TODO: For now, this process is working only for the ProstT5 mode
-    # We may want to extend it to structure queries too.
-    # The variable used for the structures is query_structures
-    # but it is not used anywhere else.
+    if query_structures:
+        print(f"[INFO] {len(query_structures)} structure query files ready.")
+    else:
+        print("[INFO] No structure queries identified.")
+
+    if fallback_sequences:
+        print(
+            f"[INFO] {len(fallback_sequences)} sequence(s) lack structures and will require ProstT5."
+        )
+        if not args.prostt5_model:
+            preview = ", ".join(seq.name for seq in fallback_sequences[:5])
+            if len(fallback_sequences) > 5:
+                preview += ", ..."
+            sys.exit(
+                "Missing structures detected but --prostt5-model not provided. "
+                f"Examples: {preview}"
+            )
+    elif args.prostt5_model:
+        print("[INFO] ProstT5 model provided; will use it if needed.")
+
+    if not query_structures and not fallback_sequences:
+        sys.exit("No queries to process after inspecting inputs.")
+
+    all_hits_per_query: Dict[str, List[Hit]] = {}
+    query_tm_availability: Dict[str, bool] = {}
+    processed_query_ids: Set[str] = set()
+
+    # 1) Run Foldseek for each query (structures first, ProstT5 fallback second)
     start_time = time.time()
     print("[INFO] Running Foldseek")
     with tempfile.TemporaryDirectory(prefix="s2f_foldseek_") as td:
         tmpdir = Path(td)
-        all_hits_per_query: Dict[str, List[Hit]] = {}  # type: ignore
-        for qpath, qname in zip(query_inputs, query_names):
+        foldseek_jobs: List[Tuple[Path, str, Optional[str], str]] = []
+
+        for sp in query_structures:
+            foldseek_jobs.append((sp, sp.stem, None, "structure"))
+
+        if fallback_sequences:
+            fallback_fasta = tmpdir / "queries_prostt5.fasta"
+            with open(fallback_fasta, "w", encoding="utf-8") as fh:
+                for rec in fallback_sequences:
+                    fh.write(f">{rec.header}\n{wrap_seq(rec.seq)}\n")
+            foldseek_jobs.append(
+                (
+                    fallback_fasta,
+                    fallback_fasta.stem,
+                    args.prostt5_model,
+                    "prostt5",
+                )
+            )
+            print(
+                f"[INFO] Prepared ProstT5 fallback FASTA with {len(fallback_sequences)} sequence(s)."
+            )
+
+        for qpath, qlabel, prostt5_model, mode in foldseek_jobs:
+            print(
+                f"[INFO] Foldseek search ({mode}) for input: {qpath.name}"
+            )  # noqa
             try:
                 hits = run_foldseek_easy_search(
                     qpath,
@@ -763,7 +792,7 @@ def main():
                     tmpdir,
                     alignment_type=args.alignment_type,
                     max_hits=max(200, args.topk),
-                    prostt5_model=args.prostt5_model,
+                    prostt5_model=prostt5_model,
                     gpu=args.gpu,
                 )
             except Exception as e:
@@ -771,22 +800,40 @@ def main():
                     f"[WARN] Foldseek failed for {qpath.name}: {e}\n"
                 )  # noqa
                 hits = []
-            print(f"[INFO] {len(hits)} hits from Foldseek for {qname}.")
-            print("[INFO]: Grouping hits by query sequence...")
-            # Regroup by per-sequence query ID
-            for qid, subhits in group_hits_by_query(hits).items():
-                # breakpoint()
-                all_hits_per_query[qid] = subhits
+            print(
+                f"[INFO] {len(hits)} hits from Foldseek for {qlabel} ({mode})."
+            )
+            grouped = group_hits_by_query(hits)
+            if not grouped:
+                print(
+                    f"[INFO] No hits reported for {qlabel} ({mode})."
+                )  # noqa
+            for qid, subhits in grouped.items():
+                processed_query_ids.add(qid)
+                if qid in all_hits_per_query:
+                    all_hits_per_query[qid].extend(subhits)
+                else:
+                    all_hits_per_query[qid] = list(subhits)
+                has_tm = any(h.avg_tm is not None for h in subhits)
+                if qid in query_tm_availability:
+                    query_tm_availability[qid] = (
+                        query_tm_availability[qid] or has_tm
+                    )
+                else:
+                    query_tm_availability[qid] = has_tm
 
     end_time = time.time()
     print(f"[INFO] Foldseek done in {end_time - start_time:.1f} seconds.")
+    print(
+        f"[INFO] {len(processed_query_ids)} unique query identifier(s) returned hits."
+    )
     # 2) Apply selection / thresholds and
     # collect wanted UniProt accessions across all queries
     print("[INFO] Applying selection thresholds...")
-    tm_available = args.prostt5_model is None
     accepted_per_query: Dict[str, List[Hit]] = {}  # type: ignore
     wanted_accs: Set[str] = set()  # type: ignore
     for qid, hits in all_hits_per_query.items():
+        tm_available = query_tm_availability.get(qid, False)
         acc_hits = select_hits(
             hits,
             evalue_max=args.evalue_max,
@@ -983,7 +1030,18 @@ def main():
         #     quoting=csv.QUOTE_NONE,
         # )
 
-    print(f"[OK] Processed {len(query_structures)} queries.")
+    total_structure_queries = len(query_structures)
+    total_prostt5_queries = len(fallback_sequences)
+    total_attempted = total_structure_queries + total_prostt5_queries
+    retained_with_hits = sum(1 for hits in accepted_per_query.values() if hits)
+
+    print(
+        f"[OK] Attempted {total_attempted} query sequence(s) "
+        f"({total_structure_queries} structure, {total_prostt5_queries} ProstT5 fallback)."
+    )
+    print(
+        f"[OK] {retained_with_hits} query identifier(s) retained after filtering."
+    )
     print(f"[OK] Outputs in: {args.outdir}")
     print(
         "[INFO] Per-query files: <query>.hits.tsv and <query>.summary.json; aggregate: assignments.tsv"  # noqa
