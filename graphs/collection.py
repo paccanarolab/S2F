@@ -93,9 +93,11 @@ class Collection(Graph):
                  fasta, proteins, string_dir, string_links, core_ids,
                  output_dir, orthologs_dir, graphs_dir, alias, cpus, blacklist,
                  max_evalue, perc, positives, protein_format, string_core_only,
+                 recompute_orthologs=True,
                  interesting_graphs=['neighborhood', 'experiments',
                                      'coexpression', 'textmining',
-                                     'database']):
+                                     'database'],
+                 chunk_size=200000):
         super(Collection, self).__init__()
         self.fasta = fasta
         self.proteins = proteins
@@ -118,6 +120,10 @@ class Collection(Graph):
         self.interesting_graphs = interesting_graphs
         self.collection = None
         self.protein_format = protein_format
+        self.recompute_orthologs = recompute_orthologs
+        self._collection_chunks = []
+        self._collection_edge_count = 0
+        self.chunk_size = chunk_size
 
     def get_graph(self, **kwargs):
         # It is assumed that the collection was already made
@@ -159,6 +165,25 @@ class Collection(Graph):
             graph[g] = []
         return graph
 
+    def _process_graph_buffer(self, organism_id, graph_buffer):
+        if not graph_buffer['protein 1']:
+            return
+        graph_df = pd.DataFrame.from_dict(graph_buffer)
+        if graph_df.empty:
+            return
+        condition = None
+        for g in self.interesting_graphs:
+            cond = graph_df[g] > 0
+            condition = cond if condition is None else (condition | cond)
+        if condition is not None:
+            filtered = graph_df[condition]
+        else:
+            filtered = graph_df
+        if not filtered.empty:
+            self.process_graph(organism_id, filtered)
+        del graph_df
+        del filtered
+
     def process_graph(self, string_id, graph):
         self.tell('Transferring links from', string_id)
         # load ortholog file
@@ -199,14 +224,14 @@ class Collection(Graph):
 
         drop_cols = ['protein 1', 'protein 2', 'target1', 'target2',
                      'max_evalue1', 'max_evalue2']
-        if self.collection is None:
-            self.collection = valid_edges.drop(drop_cols, axis=1)
-        else:
-            self.collection = pd.concat(
-                [self.collection, valid_edges.drop(drop_cols, axis=1)],
-                ignore_index=True)
-
-        self.tell('current collection has', self.collection.shape[0], 'edges')
+        chunk = valid_edges.drop(drop_cols, axis=1)
+        if not chunk.empty:
+            self._collection_chunks.append(chunk)
+            self._collection_edge_count += chunk.shape[0]
+        del valid_edges
+        del valid_orthologs
+        del orthologs
+        self.tell('current collection has', self._collection_edge_count, 'edges')
         # TODO: rename "query" to "protein" for consistency
 
     def write_graph(self, filename):
@@ -216,6 +241,8 @@ class Collection(Graph):
         collection_file = os.path.join(self.graphs_dir, self.alias)
         if not os.path.exists(collection_file):
             self.tell('Loading STRING core id')
+            self._collection_chunks = []
+            self._collection_edge_count = 0
             core_ids = []
             for line in open(self.core_ids, 'r'):
                 if line != '':
@@ -230,7 +257,6 @@ class Collection(Graph):
                                 "-dbtype prot",
                                 shell=True)
 
-            self.tell('Computing Orthologs using', self.cpus, 'cores')
             params = []
             # collect organisms
             string_organisms = []
@@ -240,13 +266,18 @@ class Collection(Graph):
                 string_dir = Path(self.string_dir)
                 string_organisms = [fn.stem for fn in string_dir.glob("*.faa")]
 
-            for org_id in string_organisms:
-                fasta = os.path.join(self.string_dir, org_id + '.faa')
-                out = self.alias + '_AND_' + org_id
-                params.append([self.fasta, self.db, fasta, fasta, out,
-                               self.orthologs_dir, self.protein_format])
-            with Pool(self.cpus) as p:
-                p.starmap(compute_ortholog, params)
+            if self.recompute_orthologs:
+                self.tell('Computing Orthologs using', self.cpus, 'cores')
+                for org_id in string_organisms:
+                    fasta = os.path.join(self.string_dir, org_id + '.faa')
+                    out = self.alias + '_AND_' + org_id
+                    params.append([self.fasta, self.db, fasta, fasta, out,
+                                   self.orthologs_dir, self.protein_format])
+                if params:
+                    with Pool(self.cpus) as p:
+                        p.starmap(compute_ortholog, params)
+            else:
+                self.tell('Skipping ortholog recomputation by configuration.')
 
             # once the orthologs are computed, we transfer links from STRING
             should_process = {}
@@ -287,23 +318,9 @@ class Collection(Graph):
                             current_organism = org_id
                             graph = self.clean_graph()
                         elif current_organism != org_id:
-                            # make a pandas from the string graph
-                            self.tell(f"DataFrame for {current_organism}")
-                            graph_df = pd.DataFrame.from_dict(graph)
-                            # keeping only the relevant links
-                            # (those with some information in at
-                            # least one of the models)
-                            condition = None
-                            for g in self.interesting_graphs:
-                                if condition is None:
-                                    condition = graph_df[g] > 0
-                                else:
-                                    condition |= graph_df[g] > 0
-
-                            # transfer links
-                            self.process_graph(current_organism,
-                                               graph_df[condition])
-
+                            # flush buffered edges from previous organism
+                            self.tell(f"Flushing buffered edges for {current_organism}")
+                            self._process_graph_buffer(current_organism, graph)
                             # clean graph and update current organism
                             graph = self.clean_graph()
                             current_organism = org_id
@@ -314,25 +331,31 @@ class Collection(Graph):
                             graph['protein 2'].append(fields[1])
                             for g in self.interesting_graphs:
                                 graph[g].append(int(fields[graph_index[g]]))
+                            if (
+                                self.chunk_size
+                                and len(graph['protein 1']) >= self.chunk_size
+                            ):
+                                self.tell(
+                                    f"Chunk threshold reached ({len(graph['protein 1'])} edges) "
+                                    f"for {current_organism}, processing chunk."
+                                )
+                                self._process_graph_buffer(current_organism, graph)
+                                graph = self.clean_graph()
 
             # we make sure we don't miss possible links from
             # the last organism in STRING
             self.tell("Processing last organism")
-            if should_process[current_organism]:
-                # make a pandas from the string graph
-                graph_df = pd.DataFrame.from_dict(graph)
-                # keeping only the relevant links (those with some
-                # information in at least one of the models)
-                condition = None
-                for g in self.interesting_graphs:
-                    if condition is None:
-                        condition = graph_df[g] > 0
-                    else:
-                        condition |= graph_df[g] > 0
-
-                # transfer links
-                self.process_graph(current_organism, graph_df[condition])
+            if current_organism != -1 and should_process.get(current_organism, False):
+                self._process_graph_buffer(current_organism, graph)
             self.tell("Finished with transfer, ordering...")
+            if self._collection_chunks:
+                self.collection = pd.concat(
+                    self._collection_chunks, ignore_index=True)
+                self._collection_chunks.clear()
+            else:
+                cols = ['query1', 'query2', 'max_evalue'] + \
+                    list(self.interesting_graphs)
+                self.collection = pd.DataFrame(columns=cols)
             Graph.assert_lexicographical_order(self.collection,
                                                p1='query1', p2='query2')
             self.collection.to_pickle(os.path.join(collection_file))
