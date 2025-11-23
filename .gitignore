@@ -132,3 +132,10 @@ fabric.properties
 
 # Editor-based Rest Client
 .idea/httpRequests
+
+
+# Results data
+results/
+
+# seeds data
+ipr_seed/

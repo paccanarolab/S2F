@@ -13,27 +13,27 @@ class SeedFromInterPro(FancyApp.FancyApp):
         self.output = args.output
 
     def run(self):
-        self.tell('Building Gene Ontology')
+        self.tell("Building Gene Ontology")
         go = GeneOntology.GeneOntology(self.obo, verbose=True)
         go.build_structure()
         terms = pd.DataFrame(list(enumerate(sorted(go.terms.keys()))))
-        terms.columns = ['term idx', 'term id']
-        terms.set_index('term id', inplace=True)
-        self.tell('Extracting protein set from InterPro file')
+        terms.columns = ["term idx", "term id"]
+        terms.set_index("term id", inplace=True)
+        self.tell("Extracting protein set from InterPro file")
         proteins = set()
         with open(self.interpro_file) as ip_file:
             for line in ip_file:
-                proteins.add(line.split('\t')[0])
+                proteins.add(line.split("\t")[0].split("|")[1])
         proteins = pd.DataFrame(list(enumerate(sorted(list(proteins)))))
-        proteins.columns = ['protein idx', 'protein id']
-        proteins.set_index('protein id', inplace=True)
-        self.tell('Parsing the seed file...')
-        seeder = interpro.InterProSeed(self.interpro_file,
-                                       proteins,
-                                       terms,
-                                       go)
+        proteins.columns = ["protein idx", "protein id"]
+        proteins.set_index("protein id", inplace=True)
+        # breakpoint()
+        self.tell("Parsing the seed file...")
+        seeder = interpro.InterProSeed(
+            self.interpro_file, proteins, terms, go, "uniprot"
+        )
         seeder.process_output()
         assignment = seeder.get_seed(return_pandas_assignment=True)
-        self.tell('Saving seed file into', self.output, '...')
-        assignment.to_csv(self.output, sep='\t', header=None, index=False)
-        self.tell('done')
+        self.tell("Saving seed file into", self.output, "...")
+        assignment.to_csv(self.output, sep="\t", header=None, index=False)
+        self.tell("done")

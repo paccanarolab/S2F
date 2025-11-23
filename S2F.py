@@ -95,6 +95,9 @@ if __name__ == '__main__':
     predict.add_argument('--fasta-id-parser',
                          help='Determines how the protein IDs will be handled',
                          default='uniprot', choices=['uniprot', 'entire_id'])
+    predict.add_argument('--skip-orthologs',
+                         help='Skip recomputing STRING ortholog mappings when existing results are present.',
+                         action='store_true')
 
     # TODO: perhaps it is a good idea to add the BLAST executable
     # as a parameter as well

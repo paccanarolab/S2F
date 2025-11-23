@@ -38,6 +38,10 @@ class TransferInteractions(FancyApp.FancyApp):
         self.protein_format = run_conf.get('functions',
                                            'fasta_id_parser',
                                            fallback='uniprot')
+        self.collection_chunk_size = run_conf.getint(
+            'graphs', 'collection_chunk_size', fallback=200000)
+        self.recompute_orthologs = run_conf.getboolean(
+            'graphs', 'recompute_orthologs', fallback=True)
         self.cpu = os.path.expanduser(run_conf.get('configuration',
                                                    'cpu',
                                                    fallback='infer'))
@@ -64,5 +68,7 @@ class TransferInteractions(FancyApp.FancyApp):
                          self.orthologs_dir, self.graphs_dir, self.alias,
                          self.cpu, None, self.max_evalue, self.perc,
                          self.positives, self.protein_format,
+                         recompute_orthologs=self.recompute_orthologs,
+                         chunk_size=self.collection_chunk_size
                          )
         col.compute_graph()
